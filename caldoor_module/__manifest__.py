@@ -27,7 +27,8 @@
         'views/views.xml',
         'views/templates.xml',
         'views/res_partner_form_inherit.xml',
-        'views/sale_order_form_inherit.xml'
+        'views/sale_order_form_inherit.xml',
+        'views/product_category_form_inherit.xml'
     ],
     # only loaded in demonstration mode
     'demo': [

@@ -7,10 +7,11 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='payment_term_id']" position="after">
                 <field name="x_category_id" string="Category" widget="many2one"/>
+                <field name="is_drawerbox" string="DrawerBox" invisible="1"/>
             </xpath>
             <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='order_lines']/field[@name='order_line']/tree[1]/field[@name='product_uom_qty']" position="after">
                 <field name="x_width" string="Width"/>
-                <field name="x_depth" string="Depth" attrs="{'column_invisible': [('parent.x_category_id', '!=', 6)]}" />
+                <field name="x_depth" string="Depth" attrs="{'column_invisible': [('parent.is_drawerbox', '==', False)]}" />
                 <field name="x_height" string="Height"/>
                 <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='order_lines']/field[@name='order_line']/tree[1]/field[@name='name']" position="move"/>
                 <field name="x_sqft" string="SqFt/Box"/>
