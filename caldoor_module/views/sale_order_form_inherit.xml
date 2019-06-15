@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="sale_order_form_custom_caldoor" model="ir.ui.view">
+        <field name="name">sale.order.form.custom.caldoor</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="x_category_id" string="Category" widget="many2one"/>
+            </xpath>
+            <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='order_lines']/field[@name='order_line']/tree[1]/field[@name='product_uom_qty']" position="after">
+                <field name="x_width" string="Width"/>
+                <field name="x_depth" string="Depth" attrs="{'column_invisible': [('parent.x_category_id', '!=', 6)]}" />
+                <field name="x_height" string="Height"/>
+                <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='order_lines']/field[@name='order_line']/tree[1]/field[@name='name']" position="move"/>
+                <field name="x_sqft" string="SqFt/Box"/>
+                <field name="x_sqft_price" string="SqFt Price"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
