@@ -19,14 +19,18 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base','sale_management','account_accountant'],
+    'depends': ['base','sale_management','account_accountant','stock','delivery'],
 
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
-        'views/res_partner_form_inherit.xml'
+        'views/res_partner_form_inherit.xml',
+        'views/sale_order_form_inherit.xml',
+        'views/product_category_form_inherit.xml',
+        'views/account_invoice_form.xml',
+        'views/delivery_carrier_form_inherit.xml'
     ],
     # only loaded in demonstration mode
     'demo': [
