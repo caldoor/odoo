@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="account.invoice_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='team_id']" position="after">
-                <field name="x_category_id" widget="many2one"/>
+                <field name="x_category_id"/>
                 <field name="is_drawerbox" string="DrawerBox" invisible="1"/>
             </xpath>
             <xpath expr="//form[1]/sheet[1]/notebook[1]/page[1]/field[@name='invoice_line_ids']/tree[1]/field[@name='product_id']" position="after">

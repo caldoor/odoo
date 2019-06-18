@@ -5,7 +5,7 @@ from odoo import models, fields, api
 class AccountInvoice(models.Model):
     _inherit = "account.invoice"
 
-    x_category_id = fields.Many2one("product.category", string="Category", delegate=True, required=True, domain=[('is_for_sale_order', '=', True)])
+    x_category_id = fields.Many2one("product.category", string="Category", required=True, domain=[('is_for_sale_order', '=', True)])
     is_drawerbox = fields.Boolean(string="DrawerBox", compute="_check_drawerbox")
 
     def _check_drawerbox(self):

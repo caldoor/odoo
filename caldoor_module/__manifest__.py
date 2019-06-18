@@ -19,7 +19,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base','sale_management','account_accountant'],
+    'depends': ['base','sale_management','account_accountant','stock','delivery'],
 
     # always loaded
     'data': [
@@ -29,7 +29,8 @@
         'views/res_partner_form_inherit.xml',
         'views/sale_order_form_inherit.xml',
         'views/product_category_form_inherit.xml',
-        'views/account_invoice_form.xml'
+        'views/account_invoice_form.xml',
+        'views/delivery_carrier_form_inherit.xml'
     ],
     # only loaded in demonstration mode
     'demo': [
