@@ -19,7 +19,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base','sale_management','account_accountant','stock','delivery'],
+    'depends': ['base','sale_management','account_accountant','stock','delivery','website_sale','delivery_hs_code'],
 
     # always loaded
     'data': [
@@ -30,7 +30,8 @@
         'views/sale_order_form_inherit.xml',
         'views/product_category_form_inherit.xml',
         'views/account_invoice_form.xml',
-        'views/delivery_carrier_form_inherit.xml'
+        'views/delivery_carrier_form_inherit.xml',
+        'views/product_template_form_inherit.xml'
     ],
     # only loaded in demonstration mode
     'demo': [
