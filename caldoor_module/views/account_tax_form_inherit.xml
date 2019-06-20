@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="account_tax_form_custom_caldoor" model="ir.ui.view">
+        <field name="name">account.tax.form.custom.caldoor</field>
+        <field name="model">account.tax</field>
+        <field name="inherit_id" ref="account.view_tax_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form[1]/sheet[1]/group[1]/group[1]/field[@name='name']" position="after">
+                <field name="x_tax_description" string="Tax Description"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="account_tax_tree_custom_caldoor" model="ir.ui.view">
+        <field name="name">account.tax.tree.custom.caldoor</field>
+        <field name="model">account.tax</field>
+        <field name="inherit_id" ref="account.view_tax_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree[1]/field[@name='name']" position="after">
+                <field name="x_tax_description"/>
+                <field name="amount"/>
+            </xpath>
+            <xpath expr="//field[@name='description']" position="after">
+                <field name="account_id"/>
+                <field name="refund_account_id"/>
+                <field name="tax_group_id"/>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="account_tax_search_custom_caldoor" model="ir.ui.view">
+        <field name="name">account.tax.search.custom.caldoor</field>
+        <field name="model">account.tax</field>
+        <field name="inherit_id" ref="account.view_account_tax_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search[1]/field[@name='name']" position="after">
+                <field name="x_tax_description"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
