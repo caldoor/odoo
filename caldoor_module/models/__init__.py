@@ -9,3 +9,4 @@ from . import account_invoice_line
 from . import sale_advance_payment_inv
 from . import delivery_carrier
 from . import product_template
+from . import account_payment_term
