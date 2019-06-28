@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="assets_frontend" inherit_id="web.assets_frontend">
+        <xpath expr="script[last()]" position="after">
+            <script type="text/javascript" src="/caldoor_authorize/static/src/js/payment.js"></script>
+        </xpath>
+    </template>
+
+    <template inherit_id="payment.payment_tokens_list" id="payment_tokens_list">
+        <xpath expr="//div[hasclass('card')]" position="inside">
+            <t t-set="authorize" t-value="acquirers.filtered(lambda a: a.provider == 'authorize')"/>
+            <t t-if="not authorize">
+                <t t-set="authorize" t-value="pms.filtered(lambda p: p.provider == 'authorize')"/>
+            </t>
+            <t t-if="authorize and sale_order">
+                <t t-set="fee" t-value="round(((authorize.convenience_fee_percent * sale_order.amount_total)/100), 2)"/>
+                <input type="hidden" t-att-value="fee" name="convenience_fee" id="convenience_fee"/>
+                <div class="card-body convenience_fee" style="display: none;">
+                    <div class="alert alert-info">
+                        <p>Convenience fee details for authorize payment</p>
+                        <table class="table table-bordered" style="width: 60%;">
+                            <tr>
+                                <th style="padding:5px;">Order Amount</th>
+                                <td class="text-right" style="padding:5px;"><t t-esc="sale_order.amount_total"/></td>
+                            </tr>
+                            <tr>
+                                <th style="padding:5px;">Convenience Fee</th>
+                                <td class="text-right" style="padding:5px;"><t t-esc="fee"/></td>
+                            </tr>
+                            <tr>
+                                <th style="padding:5px;">Total Payable Amount</th>
+                                <td class="text-right" style="padding:5px;"><b><t t-esc="round((sale_order.amount_total + fee), 2)"/></b></td>
+                            </tr>
+                        </table>
+                        <b>Do you want to proceed ?</b>
+
+                        <label class="ml8"> <input type="checkbox" class="fee_decision" name="fee_decision" value="yes"/> <span class="badge">Yes</span></label>
+                        <label class="ml8"> <input type="checkbox" class="fee_decision" name="fee_decision" value="no"/> <span class="badge">No</span></label>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//t[@t-foreach='pms']//input[@name='pm_id']" position="attributes">
+            <attribute name="t-att-data-provider">pm.provider</attribute>
+        </xpath>
+    </template>
+
+    <template inherit_id="sale.sale_order_portal_template" id="sale_order_portal_template">
+        <xpath expr="//div[@id='payment_method']//t[@t-call='payment.payment_tokens_list']" position="inside">
+            <t t-set="sale_order" t-value="sale_order"/>
+        </xpath>
+    </template>
+</odoo>
