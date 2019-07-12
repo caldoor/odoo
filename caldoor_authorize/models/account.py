@@ -31,7 +31,7 @@ class AccountPayment(models.Model):
     def action_validate_invoice_payment(self):
         for payment in self:
             invoice = payment.invoice_ids and payment.invoice_ids[0]
-            if payment.payment_token_id.acquirer_id.provider == 'authorize' and invoice:
+            if payment.payment_token_id.acquirer_id.provider == 'authorize' and invoice and payment.convenience_fee:
                 invoice_line = invoice.invoice_line_ids.filtered(lambda l: l.product_id.id == payment.payment_token_id.acquirer_id.convenience_fee_product_id.id)
                 if invoice_line:
                     # with authorize payment method, we charge customer convenince fee on total amount of invoice and hence

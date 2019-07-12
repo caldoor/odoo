@@ -61,14 +61,5 @@
         <xpath expr="//div[@id='payment_method']//t[@t-call='payment.payment_tokens_list']" position="inside">
             <t t-set="sale_order" t-value="sale_order"/>
         </xpath>
-
-        <xpath expr="//div[@t-if='not sale_order.has_to_be_signed(True) and sale_order.has_to_be_paid(True)']//b[@t-field='sale_order.amount_total']" position="replace">
-            <t t-if="sale_order.payment_option != 'c50'"> 
-                <b data-id="total_amount" t-field="sale_order.amount_total"/> herere
-            </t>
-            <t t-else="">
-                <b data-id="total_amount" t-field="sale_order.amount_due"/>
-            </t>
-        </xpath>
     </template>
 </odoo>
