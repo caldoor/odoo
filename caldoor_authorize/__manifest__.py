@@ -47,7 +47,7 @@ b) Accepting should add a new Invoice line with the convenience fee product and 
 c) Rejecting will not allow Authorize to be used for payment.
 
 """,
-    'depends': ['sale', 'payment_authorize'],
+    'depends': ['sale', 'payment_authorize', 'account_cancel'],
     'data': [
         'views/payment_views.xml',
         'views/templates.xml',
