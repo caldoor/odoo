@@ -10,19 +10,27 @@ class SaleOrder(models.Model):
 
     payment_option = fields.Selection([('c50', '50 %'), ('c100', '100 %')], defualt='c100')
 
+    def _remove_convenience_fee(self, product_id):
+        self.ensure_one()
+        self.order_line.filtered(lambda l: l.product_id.id == product_id).unlink()
+
+    def has_convenience_fee_applied(self):
+        return True if self.order_line.filtered(lambda l: l.is_cf_line) else False
+
     def _add_convenience_fee(self, acquirer_id):
         self.ensure_one()
         acquirer = self.env['payment.acquirer'].browse(acquirer_id).exists()
         if acquirer.provider == 'authorize':
             product_id = acquirer.convenience_fee_product_id.id
             convenience_fee_percent = acquirer.convenience_fee_percent
-            if self.state in ('draft', 'sent') or self.amount_due > 0:
+            if self.state in ('draft', 'sent'):
+                self._remove_convenience_fee(product_id)
                 if self.payment_option == 'c50':
                     amount = self.amount_total / 2
                 else:
                     amount = self.amount_total
                 fee = ((amount * convenience_fee_percent) / 100)
-                self.write({'order_line': [(0, 0, {'product_id': product_id, 'product_uom_qty': 1, 'price_unit': fee})]})
+                self.write({'order_line': [(0, 0, {'product_id': product_id, 'product_uom_qty': 1, 'price_unit': fee, 'is_cf_line': True})]})
 
     @api.multi
     def _create_payment_transaction(self, vals):
@@ -98,3 +106,9 @@ class SaleOrder(models.Model):
             transaction.s2s_do_transaction()
 
         return transaction
+
+
+class SaleOrderLine(models.Model):
+    _inherit = 'sale.order.line'
+
+    is_cf_line = fields.Boolean()
