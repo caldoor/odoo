@@ -55,7 +55,7 @@ odoo.define('caldoor_authorize.payment_form', function (require) {
             this.$(".fee_decision").prop('checked', false);
             var checked_radio = this.$('input[type="radio"]:checked');
             var provider = $(checked_radio).data('provider');
-            if (provider === 'authorize') {
+            if (provider === 'authorize' && this.$('#convenience_fee').length) {
                 this.$('.convenience_fee').show();
                 this.$('#o_payment_form_pay').attr('disabled', true);
             } else {
