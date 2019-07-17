@@ -28,18 +28,29 @@ odoo.define('caldoor_authorize.payment_form', function (require) {
             @params {jquery event}
         */
         _onClickPaymentChoice: function(ev) {
+            var self = this;
             var $checkbox = $(ev.currentTarget);
             this.$(".payment_choice").prop('checked', false);
             $checkbox.prop('checked', true);
             var value = $checkbox.val();
-            if(value === 'c50') {
-                this.$('.c100_term_field').addClass('d-none');
-                this.$('.c50_term_field').removeClass('d-none');
-            } else {
-                this.$('.c100_term_field').removeClass('d-none');
-                this.$('.c50_term_field').addClass('d-none');
-            }
-            this.$('input[name="payment_option"]').val(value);
+            this._updatePaymentOption(value).then(function() {
+                if(value === 'c50') {
+                    self.$('.c100_term_field').addClass('d-none');
+                    self.$('.c50_term_field').removeClass('d-none');
+                } else {
+                    self.$('.c100_term_field').removeClass('d-none');
+                    self.$('.c50_term_field').addClass('d-none');
+                }
+                //this.$('input[name="payment_option"]').val(value);
+            });
+        },
+        /* private */
+        _updatePaymentOption: function (payment_option) {
+            var orderId = this.options.orderId || parseInt(this.$('#sale_order_id').val());
+            var url = '/my/orders/'+orderId+'/update/payment_option';
+            return ajax.jsonRpc(url, 'call', {
+                'payment_option': payment_option,
+            });
         },
         /* 
             @private

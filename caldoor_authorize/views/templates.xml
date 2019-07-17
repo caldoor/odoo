@@ -16,13 +16,13 @@
             <t t-if="authorize and sale_order and not sale_order.has_convenience_fee_applied()">
                 
                 <input type="hidden" t-att-value="fee" name="convenience_fee" id="convenience_fee"/>
-                <input type="hidden" value="c100" name="payment_option"/>
+                <input type="hidden" t-att-value="sale_order.id" name="sale_order_id" id="sale_order_id"/>
                 <div class="card-body convenience_fee" style="display: none;">
                     <div class="alert alert-info">
                         <t t-set="amount" t-value="sale_order.amount_total"/>
                         <t t-set="c100_fee" t-options="{'widget': 'float', 'precision': 2}" t-value="((authorize.convenience_fee_percent * amount)/100)"/>
                         <t t-set="c50_fee" t-options="{'widget': 'float', 'precision': 2}" t-value="((authorize.convenience_fee_percent * (amount / 2)) /100)"/>
-                        <t t-if="sale_order.payment_term_id.is_c50_term and sale_order.payment_option != 'c50'">
+                        <t t-if="sale_order.payment_term_id.is_c50_term">
                             <div style="background-color: whitesmoke;">
                                 <label class="ml8"> <input type="checkbox" class="payment_choice" value="c50"/> <span class="badge">50% Payment</span></label>
                                 <label class="ml8"> <input type="checkbox" checked="checked" class="payment_choice" value="c100"/> <span class="badge">100% Payment</span></label>
