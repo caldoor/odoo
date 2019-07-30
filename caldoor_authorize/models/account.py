@@ -29,6 +29,7 @@ class AccountPayment(models.Model):
             return {'warning': {'title': '', 'message': message}}
 
     def action_validate_invoice_payment(self):
+        InvoiceLine = self.env['account.invoice.line']
         for payment in self:
             invoice = payment.invoice_ids and payment.invoice_ids[0]
             if invoice.state == 'open' and payment.payment_token_id.acquirer_id.provider == 'authorize' and invoice and payment.convenience_fee:
@@ -53,11 +54,11 @@ class AccountPayment(models.Model):
                     inv_line = {
                         'invoice_id': invoice.id,
                         'product_id': product_id.id, 'quantity': 1}
-                    invoice_line = self.env['account.invoice.line'].sudo().new(inv_line)
+                    invoice_line = InvoiceLine.new(inv_line)
                     invoice_line._onchange_product_id()
                     inv_line = invoice_line._convert_to_write({name: invoice_line[name] for name in invoice_line._cache})
                     inv_line.update(price_unit=payment.convenience_fee, invoice_line_tax_ids=False)
-                    invoice_line = self.env['account.invoice.line'].create(inv_line)
+                    invoice_line = InvoiceLine.create(inv_line)
 
                 invoice.action_invoice_open()
                 payment.amount = payment.amount + payment.convenience_fee
