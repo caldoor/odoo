@@ -57,6 +57,10 @@
               </group>
             </page>
             </xpath>
+            <xpath expr="//form[1]/sheet[1]/notebook[1]/page[1]/field[@name='child_ids']/form[1]/sheet[1]/group[1]/group[2]/field[@name='comment']" position="after">
+                <field name="id"/>
+                <field name="x_tax_id"/>
+            </xpath>
         </field>
     </record>
 
