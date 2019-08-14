@@ -49,10 +49,11 @@ class AccountPayment(models.Model):
                     invoice.state = 'draft'
                 if invoice_line:
                     price = invoice_line.price_unit + payment.convenience_fee
-                    invoice_line.write({'price_unit': price})
+                    invoice_line.write({'price_unit': price, 'sequence': 9999})
                 else:
                     inv_line = {
                         'invoice_id': invoice.id,
+                        'sequence': 9999,  # Always Last Line
                         'product_id': product_id.id, 'quantity': 1}
                     invoice_line = InvoiceLine.new(inv_line)
                     invoice_line._onchange_product_id()
