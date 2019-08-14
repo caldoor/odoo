@@ -30,7 +30,7 @@ class SaleOrder(models.Model):
                 else:
                     amount = self.amount_total
                 fee = ((amount * convenience_fee_percent) / 100)
-                self.write({'order_line': [(0, 0, {'product_id': product_id, 'product_uom_qty': 1, 'price_unit': fee, 'is_cf_line': True})]})
+                self.write({'order_line': [(0, 0, {'product_id': product_id, 'product_uom_qty': 1, 'price_unit': fee, 'is_cf_line': True, 'sequence': 9999})]})
 
     @api.multi
     def _create_payment_transaction(self, vals):

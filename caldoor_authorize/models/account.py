@@ -53,6 +53,7 @@ class AccountPayment(models.Model):
                 else:
                     inv_line = {
                         'invoice_id': invoice.id,
+                        'sequence': 9999,  # Always Last Line
                         'product_id': product_id.id, 'quantity': 1}
                     invoice_line = InvoiceLine.new(inv_line)
                     invoice_line._onchange_product_id()
