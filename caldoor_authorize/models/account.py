@@ -25,7 +25,7 @@ class AccountPayment(models.Model):
     def onchange_payment_token_id(self):
         if self.payment_token_id.acquirer_id.provider == 'authorize':
             fee = (self.amount * self.payment_token_id.acquirer_id.convenience_fee_percent) / 100
-            message = _('Convenience fee of amount %s will be added if you select authorize payment') % (fee)
+            message = _('Convenience fee of amount %.2f will be added if you select authorize payment') % (fee)
             return {'warning': {'title': '', 'message': message}}
 
     def action_validate_invoice_payment(self):
