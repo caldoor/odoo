@@ -25,7 +25,7 @@ class AccountPayment(models.Model):
     def onchange_payment_token_id(self):
         if self.payment_token_id.acquirer_id.provider == 'authorize':
             fee = (self.amount * self.payment_token_id.acquirer_id.convenience_fee_percent) / 100
-            message = _('Convenience fee of amount %s will be added if you select authorize payment') % (fee)
+            message = _('Convenience fee of amount %.2f will be added if you select authorize payment') % (fee)
             return {'warning': {'title': '', 'message': message}}
 
     def action_validate_invoice_payment(self):
@@ -49,10 +49,11 @@ class AccountPayment(models.Model):
                     invoice.state = 'draft'
                 if invoice_line:
                     price = invoice_line.price_unit + payment.convenience_fee
-                    invoice_line.write({'price_unit': price})
+                    invoice_line.write({'price_unit': price, 'sequence': 9999})
                 else:
                     inv_line = {
                         'invoice_id': invoice.id,
+                        'sequence': 9999,  # Always Last Line
                         'product_id': product_id.id, 'quantity': 1}
                     invoice_line = InvoiceLine.new(inv_line)
                     invoice_line._onchange_product_id()
