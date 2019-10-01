@@ -34,7 +34,8 @@
         'views/product_template_form_inherit.xml',
         'views/account_payment_term_inherit.xml',
         'data/account_payment_terms_data.xml',
-        'views/account_tax_form_inherit.xml'
+        'views/account_tax_form_inherit.xml',
+        'views/sale_order_quotation_tree_inherit.xml'
     ],
     # only loaded in demonstration mode
     'demo': [
