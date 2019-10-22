@@ -4,6 +4,7 @@ from datetime import datetime
 
 from odoo import api, models, fields, _
 from odoo.exceptions import ValidationError
+from .authorize_request import AuthorizeAPI
 
 
 class PaymentAcquirerAuthorize(models.Model):
@@ -52,6 +53,13 @@ class PaymentTransaction(models.Model):
             self._set_transaction_done()
             result = True
         return result
+
+    @api.multi
+    def authorize_s2s_do_refund(self):
+        self.ensure_one()
+        transaction = AuthorizeAPI(self.acquirer_id)
+        res = transaction.credit(self.payment_token_id, self.amount, self.acquirer_reference)
+        return self._authorize_s2s_validate_tree(res)
 
 
 class AccountPayment(models.Model):
