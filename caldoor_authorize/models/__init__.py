@@ -4,3 +4,4 @@ from . import account
 from . import payment
 from . import sale
 from . import account_invoice
+from . import authorize_request
