@@ -9,19 +9,20 @@
 
     <template inherit_id="payment.payment_tokens_list" id="payment_tokens_list">
         <xpath expr="//div[hasclass('card')]" position="inside">
+            <t t-set="amount_credit" t-value="sale_order.partner_id._get_outstanding_credit()"/>
             <t t-set="authorize" t-value="acquirers.filtered(lambda a: a.provider == 'authorize')"/>
             <t t-if="not authorize">
                 <t t-set="authorize" t-value="pms.filtered(lambda p: p.provider == 'authorize')"/>
             </t>
             <t t-if="authorize and sale_order and not sale_order.has_convenience_fee_applied()">
-                
                 <input type="hidden" t-att-value="fee" name="convenience_fee" id="convenience_fee"/>
                 <input type="hidden" t-att-value="sale_order.id" name="sale_order_id" id="sale_order_id"/>
                 <div class="card-body convenience_fee" style="display: none;">
                     <div class="alert alert-info">
                         <t t-set="amount" t-value="sale_order.amount_total"/>
-                        <t t-set="c100_fee" t-options="{'widget': 'float', 'precision': 2}" t-value="((authorize.convenience_fee_percent * amount)/100)"/>
-                        <t t-set="c50_fee" t-options="{'widget': 'float', 'precision': 2}" t-value="((authorize.convenience_fee_percent * (amount / 2)) /100)"/>
+                        <t t-set="order_amount" t-value="sale_order.amount_total - amount_credit"/>
+                        <t t-set="c100_fee" t-options="{'widget': 'float', 'precision': 2}" t-value="((authorize.convenience_fee_percent * (order_amount))/100)"/>
+                        <t t-set="c50_fee" t-options="{'widget': 'float', 'precision': 2}" t-value="((authorize.convenience_fee_percent * (order_amount/ 2)) /100)"/>
                         <t t-if="sale_order.payment_term_id.is_c50_term">
                             <div style="background-color: whitesmoke;">
                                 <label class="ml8"> <input type="checkbox" class="payment_choice" value="c50"/> <span class="badge">50% Payment</span></label>
@@ -30,6 +31,14 @@
                         </t>
                         <p><small>Convenience fee details for authorize payment</small></p>
                         <table class="table table-bordered" style="width: 60%;">
+                            <tr t-if="amount_credit > 0.00">
+                                <td style="padding:5px;">Outstanding Credit</td>
+                                <td class="text-right" style="padding:5px;">
+                                    <span class="amount_credit">
+                                        -(<t t-esc="amount_credit"/>)
+                                    </span>
+                                </td>
+                            </tr>
                             <tr>
                                 <td style="padding:5px;">Order Amount</td>
                                 <td class="text-right" style="padding:5px;"><span class="c100_term_field"><t t-esc="amount"/></span><span class="c50_term_field d-none"><t t-options="{'widget': 'float', 'precision': 2}" t-esc="amount / 2"/></span></td>
@@ -40,7 +49,7 @@
                             </tr>
                             <tr style="background-color: whitesmoke;">
                                 <td style="padding:5px;">Total Payable Amount</td>
-                                <td class="text-right" style="padding:5px;"><b><span class="c100_term_field"><t t-options="{'widget': 'float', 'precision': 2}" t-esc="(amount + c100_fee)"/></span><span class="c50_term_field d-none"><t t-options="{'widget': 'float', 'precision': 2}" t-esc="(amount / 2 + c50_fee)"/></span></b></td>
+                                <td class="text-right" style="padding:5px;"><b><span class="c100_term_field"><t t-options="{'widget': 'float', 'precision': 2}" t-esc="(order_amount + c100_fee)"/></span><span class="c50_term_field d-none"><t t-options="{'widget': 'float', 'precision': 2}" t-esc="(order_amount / 2 + c50_fee)"/></span></b></td>
                             </tr>
                         </table>
                         <div style="background-color: whitesmoke;">
