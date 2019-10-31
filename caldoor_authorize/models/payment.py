@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
+import json
 from datetime import datetime
 
 from odoo import api, models, fields, _
 from odoo.exceptions import ValidationError
+from odoo.tools import float_is_zero
 from .authorize_request import AuthorizeAPI
 
 
@@ -30,9 +32,9 @@ class PaymentTransaction(models.Model):
         # Not very elegant to do that here but no choice regarding the design.
         self._log_payment_transaction_sent()
         # Custom changes start
-        amount = order.amount_total
+        amount = order.amount_total - order.partner_id._get_outstanding_credit()
         if self.acquirer_id.provider == 'authorize' and order.payment_option == 'c50':
-            amount = self.amount
+            amount = self.amount - order.partner_id._get_outstanding_credit()
         # Custom changes end
         return self.acquirer_id.with_context(submit_class='btn btn-primary', submit_txt=submit_txt or _('Pay Now')).sudo().render(
             self.reference,
@@ -136,4 +138,17 @@ class AccountPayment(models.Model):
         res = super(AccountPayment, self - payments_need_refund).post()
         if transactions:
             transactions.authorize_s2s_do_refund()
+        # applying outstanding credits if the automatic invoice creation is configured
+        if self.env['ir.config_parameter'].sudo().get_param('sale.automatic_invoice'):
+            for invoice in self.invoice_ids.filtered(lambda i: i.type == 'out_invoice'):
+                invoice._get_outstanding_info_JSON()
+                datas = json.loads(invoice.outstanding_credits_debits_widget)
+                if datas.get('content'):
+                    credit_line = [line for line in datas['content'] if line['amount'] == invoice.residual]
+                    if credit_line:
+                        invoice.assign_outstanding_credit(credit_line[0]['id'])
+                    else:
+                        for line in datas['content']:
+                            if not float_is_zero(invoice.residual):
+                                invoice.assign_outstanding_credit(line['id'])
         return res
