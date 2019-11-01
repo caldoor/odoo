@@ -23,8 +23,8 @@ class AuthorizeAPI(AuthorizeAPI):
         etree.SubElement(tx, "amount").text = str(amount)
         payment = etree.SubElement(tx, "payment")
         credit_card = etree.SubElement(payment, "creditCard")
-        idx = token.name.find(' - ')
-        etree.SubElement(credit_card, "cardNumber").text = token.name[idx-4:idx] # shitty hack, but that's the only way to get the 4 last digits
+        token_names = token.name.split('-')
+        etree.SubElement(credit_card, "cardNumber").text = token_names[1]
         etree.SubElement(credit_card, "expirationDate").text = "XXXX"
         etree.SubElement(tx, "refTransId").text = transaction_id
         response = self._authorize_request(root)
