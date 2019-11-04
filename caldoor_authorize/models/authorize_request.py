@@ -24,7 +24,7 @@ class AuthorizeAPI(AuthorizeAPI):
         payment = etree.SubElement(tx, "payment")
         credit_card = etree.SubElement(payment, "creditCard")
         token_names = token.name.split('-')
-        etree.SubElement(credit_card, "cardNumber").text = token_names[1]
+        etree.SubElement(credit_card, "cardNumber").text = token_names[1][-4:]
         etree.SubElement(credit_card, "expirationDate").text = "XXXX"
         etree.SubElement(tx, "refTransId").text = transaction_id
         response = self._authorize_request(root)
