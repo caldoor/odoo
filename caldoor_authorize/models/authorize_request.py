@@ -35,7 +35,7 @@ class AuthorizeAPI(AuthorizeAPI):
             res['x_response_reason_text'] = error_msg
             return res
         res['x_response_code'] = response.find('transactionResponse/responseCode').text
-        res['x_trans_id'] = transaction_id
+        res['x_trans_id'] = response.find('transactionResponse/transId').text
         res['x_type'] = 'refund'
 
         return res
