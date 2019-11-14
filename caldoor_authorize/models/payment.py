@@ -65,8 +65,8 @@ class PaymentTransaction(models.Model):
 class AccountPayment(models.Model):
     _inherit = 'account.payment'
 
-    authorize_payment_token_id = fields.Many2one('payment.token', string="Authorize stored credit card")
     authorize_refund_transaction_id = fields.Many2one('payment.transaction')
+    authorize_payment_token_id = fields.Many2one('payment.token', related='authorize_refund_transaction_id.payment_token_id', string="Authorize stored credit card")
 
     @api.onchange('partner_id', 'payment_method_id', 'journal_id')
     def _onchange_set_payment_token_id(self):
@@ -75,14 +75,8 @@ class AccountPayment(models.Model):
             res['domain'] = {}
         partners = self.partner_id | self.partner_id.commercial_partner_id | self.partner_id.commercial_partner_id.child_ids
         if self.partner_id:
-            res['domain'].update({'authorize_payment_token_id': [('partner_id', 'in', partners.ids), ('acquirer_id.capture_manually', '=', False), ('acquirer_id.provider', '=', 'authorize')]})
             res['domain'].update({'authorize_refund_transaction_id': [('partner_id', 'in', partners.ids), ('acquirer_id.capture_manually', '=', False), ('acquirer_id.provider', '=', 'authorize')]})
         if self.payment_method_code == 'authorize_ct':
-            payment_token = self.env['payment.token'].search([('partner_id', 'in', partners.ids), ('acquirer_id.provider', '=', 'authorize'), ('acquirer_id.capture_manually', '=', False)], limit=1)
-            if payment_token and payment_token.id:
-                if not res.get('values'):
-                    res['value'] = {}
-                res['value'].update({'authorize_payment_token_id': payment_token.id})
             refund_invoice_id = self.invoice_ids.mapped('refund_invoice_id')
             if refund_invoice_id:
                 res['domain'].update({'authorize_refund_transaction_id': [('invoice_ids', 'in', refund_invoice_id.ids)]})
