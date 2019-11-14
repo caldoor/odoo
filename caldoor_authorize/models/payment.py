@@ -140,7 +140,7 @@ class AccountPayment(models.Model):
             transactions.authorize_s2s_do_refund()
         # applying outstanding credits if the automatic invoice creation is configured
         if self.env['ir.config_parameter'].sudo().get_param('sale.automatic_invoice'):
-            for invoice in self.invoice_ids.filtered(lambda i: i.type == 'out_invoice'):
+            for invoice in self.mapped('invoice_ids').filtered(lambda i: i.type == 'out_invoice'):
                 invoice._get_outstanding_info_JSON()
                 datas = json.loads(invoice.outstanding_credits_debits_widget)
                 if datas and datas.get('content'):
