@@ -143,7 +143,7 @@ class AccountPayment(models.Model):
             for invoice in self.invoice_ids.filtered(lambda i: i.type == 'out_invoice'):
                 invoice._get_outstanding_info_JSON()
                 datas = json.loads(invoice.outstanding_credits_debits_widget)
-                if datas.get('content'):
+                if datas and datas.get('content'):
                     credit_line = [line for line in datas['content'] if line['amount'] == invoice.residual]
                     if credit_line:
                         invoice.assign_outstanding_credit(credit_line[0]['id'])
