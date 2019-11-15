@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 import json
+import logging
 from datetime import datetime
 
 from odoo import api, models, fields, _
 from odoo.exceptions import ValidationError
-from odoo.tools import float_is_zero
+from odoo.tools import float_is_zero, float_compare
 from .authorize_request import AuthorizeAPI
+
+_logger = logging.getLogger(__name__)
 
 
 class PaymentAcquirerAuthorize(models.Model):
@@ -62,6 +65,27 @@ class PaymentTransaction(models.Model):
         transaction = AuthorizeAPI(self.acquirer_id)
         res = transaction.credit(self.payment_token_id, self.amount, self.acquirer_reference)
         return self._authorize_s2s_validate_tree(res)
+
+    def _check_amount_and_confirm_order(self):
+        self.ensure_one()
+        for order in self.sale_order_ids.filtered(lambda so: so.state in ('draft', 'sent')):
+            amount_total = order.amount_total - order._get_outstanding_credit()
+            if (self.acquirer_id.provider == 'authorize' and order.payment_option == 'c50') or (float_compare(self.amount, amount_total, 2) == 0):
+                order.with_context(send_email=True).action_confirm()
+            else:
+                _logger.warning(
+                    '<%s> transaction AMOUNT MISMATCH for order %s (ID %s): expected %r, got %r',
+                    self.acquirer_id.provider, order.name, order.id,
+                    order.amount_total, self.amount,
+                )
+                order.message_post(
+                    subject=_("Amount Mismatch (%s)") % self.acquirer_id.provider,
+                    body=_("The order was not confirmed despite response from the acquirer (%s): order total is %r but acquirer replied with %r.") % (
+                        self.acquirer_id.provider,
+                        order.amount_total,
+                        self.amount,
+                    )
+                )
 
 
 class AccountPayment(models.Model):
@@ -140,7 +164,7 @@ class AccountPayment(models.Model):
             transactions.authorize_s2s_do_refund()
         # applying outstanding credits if the automatic invoice creation is configured
         if self.env['ir.config_parameter'].sudo().get_param('sale.automatic_invoice'):
-            for invoice in self.invoice_ids.filtered(lambda i: i.type == 'out_invoice'):
+            for invoice in self.mapped('invoice_ids').filtered(lambda i: i.type == 'out_invoice'):
                 invoice._get_outstanding_info_JSON()
                 datas = json.loads(invoice.outstanding_credits_debits_widget)
                 if datas and datas.get('content'):
