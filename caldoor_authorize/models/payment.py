@@ -163,8 +163,8 @@ class AccountPayment(models.Model):
         if transactions:
             transactions.authorize_s2s_do_refund()
         # applying outstanding credits if the automatic invoice creation is configured
-        if self.env['ir.config_parameter'].sudo().get_param('sale.automatic_invoice'):
-            for invoice in self.mapped('invoice_ids').filtered(lambda i: i.type == 'out_invoice'):
+        if self.env['ir.config_parameter'].sudo().get_param('sale.automatic_invoice') and not self.env.context.get('bypass_credit_payment'):
+            for invoice in self.mapped('invoice_ids').filtered(lambda i: i.type == 'out_invoice' and i.state == 'open'):
                 invoice._get_outstanding_info_JSON()
                 datas = json.loads(invoice.outstanding_credits_debits_widget)
                 if datas and datas.get('content'):
@@ -173,6 +173,6 @@ class AccountPayment(models.Model):
                         invoice.assign_outstanding_credit(credit_line[0]['id'])
                     else:
                         for line in datas['content']:
-                            if not float_is_zero(invoice.residual):
+                            if not float_is_zero(invoice.residual, precision_rounding=invoice.currency_id.rounding):
                                 invoice.assign_outstanding_credit(line['id'])
         return res
