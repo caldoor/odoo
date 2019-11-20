@@ -19,6 +19,13 @@ class PaymentAcquirerAuthorize(models.Model):
     convenience_fee_percent = fields.Float(string='Convenience Fee(%)')
 
 
+class PaymentToken(models.Model):
+    _inherit = "payment.token"
+
+    convenience_fee_product_id = fields.Many2one(related="acquirer_id.convenience_fee_product_id")
+    convenience_fee_percent = fields.Float(related="acquirer_id.convenience_fee_percent")
+
+
 class PaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
 
@@ -69,7 +76,7 @@ class PaymentTransaction(models.Model):
     def _check_amount_and_confirm_order(self):
         self.ensure_one()
         for order in self.sale_order_ids.filtered(lambda so: so.state in ('draft', 'sent')):
-            amount_total = order.amount_total - order._get_outstanding_credit()
+            amount_total = order.amount_total - order.partner_id._get_outstanding_credit()
             if (self.acquirer_id.provider == 'authorize' and order.payment_option == 'c50') or (float_compare(self.amount, amount_total, 2) == 0):
                 order.with_context(send_email=True).action_confirm()
             else:
@@ -163,8 +170,8 @@ class AccountPayment(models.Model):
         if transactions:
             transactions.authorize_s2s_do_refund()
         # applying outstanding credits if the automatic invoice creation is configured
-        if self.env['ir.config_parameter'].sudo().get_param('sale.automatic_invoice'):
-            for invoice in self.mapped('invoice_ids').filtered(lambda i: i.type == 'out_invoice'):
+        if self.env['ir.config_parameter'].sudo().get_param('sale.automatic_invoice') and not self.env.context.get('bypass_credit_payment'):
+            for invoice in self.mapped('invoice_ids').filtered(lambda i: i.type == 'out_invoice' and i.state == 'open'):
                 invoice._get_outstanding_info_JSON()
                 datas = json.loads(invoice.outstanding_credits_debits_widget)
                 if datas and datas.get('content'):
@@ -173,6 +180,6 @@ class AccountPayment(models.Model):
                         invoice.assign_outstanding_credit(credit_line[0]['id'])
                     else:
                         for line in datas['content']:
-                            if not float_is_zero(invoice.residual):
+                            if not float_is_zero(invoice.residual, precision_rounding=invoice.currency_id.rounding):
                                 invoice.assign_outstanding_credit(line['id'])
         return res
