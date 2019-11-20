@@ -19,6 +19,13 @@ class PaymentAcquirerAuthorize(models.Model):
     convenience_fee_percent = fields.Float(string='Convenience Fee(%)')
 
 
+class PaymentToken(models.Model):
+    _inherit = "payment.token"
+
+    convenience_fee_product_id = fields.Many2one(related="acquirer_id.convenience_fee_product_id")
+    convenience_fee_percent = fields.Float(related="acquirer_id.convenience_fee_percent")
+
+
 class PaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
 
