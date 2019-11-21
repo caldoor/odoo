@@ -34,8 +34,8 @@
                             <tr t-if="amount_credit > 0.00">
                                 <td style="padding:5px;">Outstanding Credit</td>
                                 <td class="text-right" style="padding:5px;">
-                                    <span class="amount_credit">
-                                        -(<t t-esc="amount_credit"/>)
+                                    <span class="amount_credit" style="color: #FF0000; font-weight: bold;">
+                                        (<t t-esc="amount_credit"/>)
                                     </span>
                                 </td>
                             </tr>
