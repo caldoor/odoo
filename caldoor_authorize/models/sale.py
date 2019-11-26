@@ -26,9 +26,9 @@ class SaleOrder(models.Model):
             if self.state in ('draft', 'sent'):
                 self._remove_convenience_fee(product_id)
                 if self.payment_option == 'c50':
-                    amount = self.amount_total / 2
+                    amount = (self.amount_total - self.partner_id._get_outstanding_credit()) / 2
                 else:
-                    amount = self.amount_total
+                    amount = (self.amount_total - self.partner_id._get_outstanding_credit())
                 fee = ((amount * convenience_fee_percent) / 100)
                 self.write({'order_line': [(0, 0, {'product_id': product_id, 'product_uom_qty': 1, 'price_unit': fee, 'is_cf_line': True, 'sequence': 9999})]})
 
@@ -84,7 +84,7 @@ class SaleOrder(models.Model):
             vals['acquirer_id'] = acquirer.id
 
         vals.update({
-            'amount': sum(self.mapped('amount_total')),
+            'amount': sum(self.mapped('amount_total')) - partner._get_outstanding_credit(),
             'currency_id': currency.id,
             'partner_id': partner.id,
             'sale_order_ids': [(6, 0, self.ids)],
@@ -97,7 +97,7 @@ class SaleOrder(models.Model):
                 amount = vals['amount'] / 2
                 vals['amount'] = amount + (acquirer.convenience_fee_percent * amount / 100)
             else:
-                vals['amount'] = sum(self.mapped('amount_total'))
+                vals['amount'] = sum(self.mapped('amount_total')) - partner._get_outstanding_credit()
         # custom code end
         transaction = self.env['payment.transaction'].create(vals)
 

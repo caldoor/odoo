@@ -5,3 +5,4 @@ from . import payment
 from . import sale
 from . import account_invoice
 from . import authorize_request
+from . import res_partner
