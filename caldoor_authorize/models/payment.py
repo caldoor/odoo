@@ -17,6 +17,7 @@ class PaymentAcquirerAuthorize(models.Model):
 
     convenience_fee_product_id = fields.Many2one('product.product', string='Convenience Fee (Product)')
     convenience_fee_percent = fields.Float(string='Convenience Fee(%)')
+    restricted_group_ids = fields.Many2many("res.groups", help="Hide payment method for users belongs to these groups.")
 
 
 class PaymentToken(models.Model):
