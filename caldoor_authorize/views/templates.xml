@@ -9,7 +9,15 @@
 
     <template inherit_id="payment.payment_tokens_list" id="payment_tokens_list">
         <xpath expr="//div[hasclass('card')]" position="inside">
-            <t t-set="amount_credit" t-value="sale_order.partner_id._get_outstanding_credit()"/>
+            <t t-if="sale_order">
+              <t t-set="amount_credit" t-value="sale_order.partner_id._get_outstanding_credit()"/>
+            </t>
+            <t t-elif="invoice">
+              <t t-set="amount_credit" t-value="invoice.partner_id._get_outstanding_credit()"/>
+            </t>
+            <t t-else="">
+              <t t-set="amount_credit" t-value="0.00"/>
+            </t>
             <t t-set="authorize" t-value="acquirers.filtered(lambda a: a.provider == 'authorize')"/>
             <t t-if="not authorize">
                 <t t-set="authorize" t-value="pms.filtered(lambda p: p.provider == 'authorize')"/>
@@ -65,10 +73,14 @@
             <attribute name="t-att-data-provider">pm.provider</attribute>
         </xpath>
     </template>
-
     <template inherit_id="sale.sale_order_portal_template" id="sale_order_portal_template">
-        <xpath expr="//div[@id='payment_method']//t[@t-call='payment.payment_tokens_list']" position="inside">
-            <t t-set="sale_order" t-value="sale_order"/>
+        <xpath expr="//div[@t-if='pms or acquirers']" position="before">
+            <t t-set="acquirers" t-value="acquirers.sudo().filtered(lambda aq: request.env.user not in aq.restricted_group_ids.mapped('users'))"/>
+        </xpath>
+    </template>
+    <template id="portal_invoice_page_inherit_caldoor_authorize" name="Payment on My Invoices" inherit_id="account.portal_invoice_page">
+        <xpath expr="//div[@t-if='pms or acquirers']" position="before">
+            <t t-set="acquirers" t-value="acquirers.sudo().filtered(lambda aq: request.env.user not in aq.restricted_group_ids.mapped('users'))"/>
         </xpath>
     </template>
 </odoo>
