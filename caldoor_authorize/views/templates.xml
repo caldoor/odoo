@@ -77,10 +77,27 @@
         <xpath expr="//div[@t-if='pms or acquirers']" position="before">
             <t t-set="acquirers" t-value="acquirers.sudo().filtered(lambda aq: request.env.user not in aq.restricted_group_ids.mapped('users'))"/>
         </xpath>
+        <xpath expr="//div[@id='payment_method']" position="after">
+            <div t-if="not (pms or acquirers)">
+                <H4>There are no payment tokens available for this customer.</H4>
+            </div>
+        </xpath>
     </template>
     <template id="portal_invoice_page_inherit_caldoor_authorize" name="Payment on My Invoices" inherit_id="account.portal_invoice_page">
         <xpath expr="//div[@t-if='pms or acquirers']" position="before">
             <t t-set="acquirers" t-value="acquirers.sudo().filtered(lambda aq: request.env.user not in aq.restricted_group_ids.mapped('users'))"/>
+        </xpath>
+        <xpath expr="//div[@id='payment_method']" position="replace">
+            <div id="payment_method">
+                <t t-call="account_payment.portal_invoice_payment"/>
+            </div>
+        </xpath>
+    </template>
+    <template id="portal_invoice_payment_inherit_caldoor_authorize" inherit_id="account_payment.portal_invoice_payment">
+        <xpath expr="//div[@id='payment_method']" position="after">
+            <div t-if="not (pms or acquirers)">
+                <H4>There are no payment tokens available for this customer.</H4>
+            </div>
         </xpath>
     </template>
 </odoo>
