@@ -2,6 +2,7 @@
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
+from odoo.tools import float_round
 
 
 class account_register_payments(models.TransientModel):
@@ -16,14 +17,14 @@ class account_register_payments(models.TransientModel):
     def _compute_convenience_fee(self):
         for payment in self:
             if payment.payment_token_id.acquirer_id.provider == 'authorize':
-                payment.convenience_fee = (payment.amount * payment.payment_token_id.acquirer_id.convenience_fee_percent) / 100
+                payment.convenience_fee = float_round((payment.amount * payment.payment_token_id.acquirer_id.convenience_fee_percent) / 100, precision_rounding=2)
 
     @api.onchange('invoice_ids', 'payment_method_id')
     def onchange_invoice_ids(self):
         result = {'domain': {}, 'value': {}, 'warning': {}}
         if self.invoice_ids:
-            if len(self.invoice_ids.mapped('partner_id')) > 1:
-                raise UserError(_("You can not process payments for invoices belongs to multiple customers."))
+            if self.payment_method_code == 'electronic' and len(self.invoice_ids.mapped('partner_id')) > 1:
+                raise UserError(_("You can not process payments for invoices belongs to multiple customers electronically."))
             partners = self.invoice_ids.mapped('partner_id') | self.invoice_ids.mapped('partner_id.commercial_partner_id') | self.invoice_ids.mapped('partner_id.commercial_partner_id').mapped('child_ids')
             if partners:
                 result['domain'].update({'payment_token_id': [('partner_id', 'in', partners.ids), ('acquirer_id.capture_manually', '=', False)]})
@@ -32,7 +33,7 @@ class account_register_payments(models.TransientModel):
     @api.onchange('payment_token_id')
     def onchange_payment_token_id(self):
         if self.payment_token_id.acquirer_id.provider == 'authorize':
-            fee = (self.amount * self.payment_token_id.acquirer_id.convenience_fee_percent) / 100
+            fee = float_round((self.amount * self.payment_token_id.acquirer_id.convenience_fee_percent) / 100, precision_rounding=2)
             message = _('Convenience fee of amount %.2f will be added if you select authorize payment') % (fee)
             return {'warning': {'title': '', 'message': message}}
 
@@ -65,7 +66,7 @@ class account_register_payments(models.TransientModel):
                 invoice.action_invoice_draft()
                 # since in action invoice draft , we processed some invoice in open state in cache when we invoice having some
                 # attachements, we so we have to make state into draft forcefully here
-                conv_fees = ((invoice.amount_total * self.payment_token_id.acquirer_id.convenience_fee_percent) / 100)
+                conv_fees = float_round(((invoice.amount_total * self.payment_token_id.acquirer_id.convenience_fee_percent) / 100), precision_rounding=2)
                 if invoice.state != 'draft':
                     invoice.state = 'draft'
                 if invoice_line:
