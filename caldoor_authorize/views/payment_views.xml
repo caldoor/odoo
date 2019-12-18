@@ -9,6 +9,9 @@
                 <field name="convenience_fee_product_id" attrs="{'invisible': [('provider', '!=', 'authorize')]}"/>
                 <field name="convenience_fee_percent" attrs="{'invisible': [('provider', '!=', 'authorize')]}"/>
             </xpath>
+            <xpath expr="//field[@name='payment_flow']" position="after">
+                <field name="restricted_group_ids" widget="many2many_tags"/>
+            </xpath>
         </field>
     </record>
 
