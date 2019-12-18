@@ -83,7 +83,7 @@ class account_register_payments(models.TransientModel):
                     inv_line.update(price_unit=conv_fees, invoice_line_tax_ids=False)
                     invoice_line = InvoiceLine.create(inv_line)
                 invoice.action_invoice_open()
-        self.amount = self.amount + self.convenience_fee
+        self.amount = sum(self.invoice_ids.mapped('amount_total'))
         self = self.with_context(bypass_credit_payment=True)
         action_data = super(account_register_payments, self).create_payments()
         payment_id = action_data.get('res_id', False)
