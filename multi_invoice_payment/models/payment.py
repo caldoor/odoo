@@ -17,7 +17,7 @@ class account_register_payments(models.TransientModel):
     def _compute_convenience_fee(self):
         for payment in self:
             if payment.payment_token_id.acquirer_id.provider == 'authorize':
-                payment.convenience_fee = float_round((payment.amount * payment.payment_token_id.acquirer_id.convenience_fee_percent) / 100, precision_rounding=2)
+                payment.convenience_fee = (payment.amount * payment.payment_token_id.acquirer_id.convenience_fee_percent) / 100
 
     @api.onchange('invoice_ids', 'payment_method_id')
     def onchange_invoice_ids(self):
@@ -33,7 +33,7 @@ class account_register_payments(models.TransientModel):
     @api.onchange('payment_token_id')
     def onchange_payment_token_id(self):
         if self.payment_token_id.acquirer_id.provider == 'authorize':
-            fee = float_round((self.amount * self.payment_token_id.acquirer_id.convenience_fee_percent) / 100, precision_rounding=2)
+            fee = (self.amount * self.payment_token_id.acquirer_id.convenience_fee_percent) / 100
             message = _('Convenience fee of amount %.2f will be added if you select authorize payment') % (fee)
             return {'warning': {'title': '', 'message': message}}
 
@@ -66,7 +66,7 @@ class account_register_payments(models.TransientModel):
                 invoice.action_invoice_draft()
                 # since in action invoice draft , we processed some invoice in open state in cache when we invoice having some
                 # attachements, we so we have to make state into draft forcefully here
-                conv_fees = float_round(((invoice.amount_total * self.payment_token_id.acquirer_id.convenience_fee_percent) / 100), precision_rounding=2)
+                conv_fees = ((invoice.amount_total * self.payment_token_id.acquirer_id.convenience_fee_percent) / 100)
                 if invoice.state != 'draft':
                     invoice.state = 'draft'
                 if invoice_line:
