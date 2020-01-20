@@ -163,7 +163,6 @@ class AccountPayment(models.Model):
         payments_need_trans = self.filtered(lambda pay: pay.payment_token_id and not pay.payment_transaction_id)
         transactions = payments_need_trans._create_payment_transaction()
         transactions.filtered(lambda trans: trans.state == 'done').mapped('payment_id').write({'state': 'posted'})
-        print ("transactions............", transactions)
         transactions.s2s_do_transaction()
         payments_need_refund = self.filtered(lambda pay: pay.authorize_payment_token_id and not pay.payment_transaction_id)
         transactions = False
