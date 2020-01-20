@@ -160,7 +160,11 @@ class AccountPayment(models.Model):
         # Add convenience_fee
         if not self.invoice_ids and self.payment_token_id and self.payment_token_id.acquirer_id.provider == 'authorize' and self.payment_method_id.code == 'electronic':
             self.amount += self.convenience_fee
-
+        payments_need_trans = self.filtered(lambda pay: pay.payment_token_id and not pay.payment_transaction_id)
+        transactions = payments_need_trans._create_payment_transaction()
+        transactions.filtered(lambda trans: trans.state == 'done').mapped('payment_id').write({'state': 'posted'})
+        print ("transactions............", transactions)
+        transactions.s2s_do_transaction()
         payments_need_refund = self.filtered(lambda pay: pay.authorize_payment_token_id and not pay.payment_transaction_id)
         transactions = False
         if payments_need_refund and payments_need_refund.ids:
