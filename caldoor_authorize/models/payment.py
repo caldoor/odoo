@@ -58,12 +58,20 @@ class PaymentTransaction(models.Model):
     def _authorize_s2s_validate(self, tree):
         result = super(PaymentTransaction, self)._authorize_s2s_validate(tree)
         status_code = int(tree.get('x_response_code', '0'))
-        if status_code == self._authorize_valid_tx_status and tree.get('x_type').lower() == 'refund':
-            self.write({
-                'acquirer_reference': tree.get('x_trans_id'),
-                'date': fields.Datetime.now(),
-            })
-            self._set_transaction_done()
+        if status_code == self._authorize_valid_tx_status:
+            if tree.get('x_type').lower() == 'refund':
+                self.write({
+                    'acquirer_reference': tree.get('x_trans_id'),
+                    'date': fields.Datetime.now(),
+                })
+                self._set_transaction_done()
+            elif tree.get('x_type').lower() == 'void' and self.state == 'done':
+                self.write({
+                    'state': 'cancel',
+                    'date': fields.Date.today()
+                })
+                self._log_payment_transaction_received()
+
             result = True
         return result
 
@@ -157,12 +165,12 @@ class AccountPayment(models.Model):
 
     @api.multi
     def cancel(self):
-        electronic_payments = self.filtered(lambda p: (p.payment_method_code == 'electric') and p.payment_transaction_id)
+        electronic_payments = self.filtered(lambda p: (p.payment_method_code == 'electronic') and p.payment_transaction_id)
         if any([p.payment_date < fields.Date.today() for p in electronic_payments]):
             raise ValidationError(_("You can not cancel electronic payment 24 hour after validation."))
         res = super(AccountPayment, self).cancel()
         for payment in electronic_payments:
-            payment.payment_transaction_id.action_void()
+            payment.payment_transaction_id.s2s_void_transaction()
         return res
 
     @api.multi
