@@ -35,6 +35,9 @@
                 <field name="authorize_refund_transaction_id" attrs="{'invisible': ['|', ('payment_method_code', '!=', 'authorize_ct'), '|', ('partner_id', '=', False), ('payment_type', '=', 'transfer')], 'required': [('payment_method_code', '=', 'authorize_ct')], 'readonly': [('state', '!=', 'draft')]}" options="{'no_create': True}"/>
                 <field name="authorize_payment_token_id" attrs="{'invisible': ['|', ('authorize_refund_transaction_id', '=', False), '|', ('payment_method_code', '!=', 'authorize_ct'), '|', ('partner_id', '=', False), ('payment_type', '=', 'transfer')]}" options="{'no_create': True}"/>
             </xpath>
+            <button name="cancel" position="attributes">
+                <attribute name='confirm'>Are you sure you want to cancel this payment? This action can't be undone.</attribute>
+            </button>
         </field>
     </record>
 
