@@ -18,6 +18,7 @@ CalDoor: Aged Receivable Report
     'category': 'Custom Development',
     'depends': ['account', 'account_reports'],
     'data': [
+        'views/template.xml',
     ],
     'demo': [],
     'qweb': [

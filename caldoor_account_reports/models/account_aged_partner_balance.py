@@ -47,9 +47,10 @@ class report_account_aged_partner(models.AbstractModel):
             values_list = [values['direction'], values['4'], values['3'], values['2'], values['1'], values['0'], values['total']]
             if receivable:
                 values_list = values_list[2:]
+            ResPartner = self.env['res.partner'].browse(values['partner_id'])
             vals = {
                 'id': 'partner_%s' % (values['partner_id'],),
-                'name': values['name'],
+                'name': ResPartner and ResPartner.x_custno and "%s (%s)" % (values['name'], ResPartner.x_custno) or values['name'],
                 'level': 2,
                 'columns': [{'name': ''}] * col_num + [{'name': self.format_value(sign * v)} for v in values_list],
                 'trust': values['trust'],
