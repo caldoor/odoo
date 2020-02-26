@@ -166,7 +166,7 @@ class AccountPayment(models.Model):
     @api.multi
     def cancel(self):
         electronic_payments = self.filtered(lambda p: (p.payment_method_code == 'electronic') and p.payment_transaction_id)
-        if any([p.payment_date < fields.Date.today() for p in electronic_payments]):
+        if any([p.payment_date < fields.Date.context_today(p) for p in electronic_payments]):
             raise ValidationError(_("You can not cancel electronic payment 24 hour after validation."))
         res = super(AccountPayment, self).cancel()
         for payment in electronic_payments:
