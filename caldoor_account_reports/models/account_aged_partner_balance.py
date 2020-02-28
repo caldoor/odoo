@@ -31,10 +31,8 @@ class report_account_aged_partner(models.AbstractModel):
     def _get_lines(self, options, line_id=None):
         receivable = False
         context = self.env.context
-        col_num = 3
         if 'account_type' in context and context.get('account_type') == 'receivable':
             receivable = True
-            col_num = 5
         else:
             return super()._get_lines(options, line_id)
         sign = -1.0 if self.env.context.get('aged_balance') else 1.0
@@ -45,14 +43,12 @@ class report_account_aged_partner(models.AbstractModel):
             if line_id and 'partner_%s' % (values['partner_id'],) != line_id:
                 continue
             values_list = [values['direction'], values['4'], values['3'], values['2'], values['1'], values['0'], values['total']]
-            if receivable:
-                values_list = values_list[2:]
             ResPartner = self.env['res.partner'].browse(values['partner_id'])
             vals = {
                 'id': 'partner_%s' % (values['partner_id'],),
                 'name': ResPartner and ResPartner.x_custno and "%s (%s)" % (values['name'], ResPartner.x_custno) or values['name'],
                 'level': 2,
-                'columns': [{'name': ''}] * col_num + [{'name': self.format_value(sign * v)} for v in values_list],
+                'columns': [{'name': ''}] * 3 + [{'name': self.format_value(sign * v)} for v in values_list],
                 'trust': values['trust'],
                 'unfoldable': True,
                 'unfolded': 'partner_%s' % (values['partner_id'],) in options.get('unfolded_lines'),
@@ -90,14 +86,12 @@ class report_account_aged_partner(models.AbstractModel):
                     lines.append(vals)
         if total and not line_id:
             totals = [total[6], total[4], total[3], total[2], total[1], total[0], total[5]]
-            if receivable:
-                totals = totals[2:]
             total_line = {
                 'id': 0,
                 'name': _('Total'),
                 'class': 'total',
                 'level': 2,
-                'columns': [{'name': ''}] * col_num + [{'name': self.format_value(sign * v)} for v in totals],
+                'columns': [{'name': ''}] * 3 + [{'name': self.format_value(sign * v)} for v in totals],
             }
             lines.append(total_line)
         return lines
