@@ -162,15 +162,18 @@ class AccountPayment(models.Model):
             self.amount += self.convenience_fee
         payments_need_trans = self.filtered(lambda pay: pay.payment_token_id and not pay.payment_transaction_id)
         transactions = payments_need_trans._create_payment_transaction()
-        transactions.filtered(lambda trans: trans.state == 'done').mapped('payment_id').write({'state': 'posted'})
+        done_transactions = transactions.filtered(lambda trans: trans.state == 'done')
+        done_transactions.write({'state': 'posted'})
         transactions.s2s_do_transaction()
+        transactions.write({'is_processed': True})
         payments_need_refund = self.filtered(lambda pay: pay.authorize_payment_token_id and not pay.payment_transaction_id)
-        transactions = False
+        refund_transactions = False
         if payments_need_refund and payments_need_refund.ids:
-            transactions = payments_need_refund._create_refund_payment_transaction()
+            refund_transactions = payments_need_refund._create_refund_payment_transaction()
         res = super(AccountPayment, self - payments_need_refund).post()
-        if transactions:
-            transactions.authorize_s2s_do_refund()
+        if refund_transactions:
+            refund_transactions.authorize_s2s_do_refund()
+        transactions._log_payment_transaction_received()
         # applying outstanding credits if the automatic invoice creation is configured
         if self.env['ir.config_parameter'].sudo().get_param('sale.automatic_invoice') and not self.env.context.get('bypass_credit_payment'):
             for invoice in self.mapped('invoice_ids').filtered(lambda i: i.type == 'out_invoice' and i.state == 'open'):
