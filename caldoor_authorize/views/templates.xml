@@ -29,8 +29,8 @@
                     <div class="alert alert-info">
                         <t t-set="amount" t-value="sale_order.amount_total"/>
                         <t t-set="order_amount" t-value="sale_order.amount_total - amount_credit"/>
-                        <t t-set="c100_fee" t-options="{'widget': 'float', 'precision': 2}" t-value="((authorize.convenience_fee_percent * (order_amount))/100)"/>
-                        <t t-set="c50_fee" t-options="{'widget': 'float', 'precision': 2}" t-value="((authorize.convenience_fee_percent * (order_amount/ 2)) /100)"/>
+                        <t t-set="c100_fee" t-options="{'widget': 'float', 'precision': 2}" t-value="((authorize[0].convenience_fee_percent * (order_amount))/100)"/>
+                        <t t-set="c50_fee" t-options="{'widget': 'float', 'precision': 2}" t-value="((authorize[0].convenience_fee_percent * (order_amount/ 2)) /100)"/>
                         <t t-if="sale_order.payment_term_id.is_c50_term">
                             <div style="background-color: whitesmoke;">
                                 <label class="ml8"> <input type="checkbox" class="payment_choice" value="c50"/> <span class="badge">50% Payment</span></label>
