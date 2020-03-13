@@ -179,6 +179,7 @@ class AccountPayment(models.Model):
         if not self.invoice_ids and self.payment_token_id and self.payment_token_id.acquirer_id.provider == 'authorize' and self.payment_method_id.code == 'electronic':
             con_fee = self.convenience_fee
             if con_fee > 0:
+                # Separate convenience fees from direct electronic payments
                 Invoice = self.env['account.invoice'].with_context(company_id=self.company_id.id or self.env.user.company_id.id)
                 journal_id = (Invoice.default_get(['journal_id'])['journal_id'])
                 if not journal_id:
@@ -190,6 +191,7 @@ class AccountPayment(models.Model):
                     'journal_id': journal_id,
                     'company_id': self.company_id.id or self.env.user.company_id.id,
                     'type': 'out_invoice',
+                    'name': 'Convenience Fee',
                     })
                 invoice = Invoice.create(accountinvoice)
                 product_id = self.payment_token_id.acquirer_id.convenience_fee_product_id
