@@ -19,7 +19,7 @@ class report_account_aged_partner(models.AbstractModel):
         receivable = 'model' in options and options.get('model') == 'account.aged.receivable'
         if receivable or 'account_type' in context and context.get('account_type') == 'receivable':
             columns = [{}]
-            col_list = [_("Payment Terms"), _("Reference"),  _("Age Days")]
+            col_list = [_("Credit Limit"), _("Last Payment Date"), _("Payment Terms"), _("Reference"),  _("Age Days")]
             col_day_list = [_("Not due on: %s") % format_date(self.env, options['date']['date']), ("1 - 30"), _("31 - 60"), _("61 - 90"), _("91 - 120"), _("Older"), _("Total")]
             cols_list = col_list + col_day_list
             columns += [
@@ -42,13 +42,18 @@ class report_account_aged_partner(models.AbstractModel):
         for values in results:
             if line_id and 'partner_%s' % (values['partner_id'],) != line_id:
                 continue
-            values_list = [values['direction'], values['4'], values['3'], values['2'], values['1'], values['0'], values['total']]
             ResPartner = self.env['res.partner'].browse(values['partner_id'])
+            payment = self.env['account.payment'].search([('partner_id', '=', values['partner_id'])], limit=1)
+            payment_date = False
+            if payment:
+                payment_date = payment.payment_date
+            team = ResPartner.team_id and ResPartner.team_id.name or ''
+            values_list = [values['direction'], values['4'], values['3'], values['2'], values['1'], values['0'], values['total']]
             vals = {
                 'id': 'partner_%s' % (values['partner_id'],),
-                'name': ResPartner and ResPartner.x_custno and "%s (%s)" % (values['name'], ResPartner.x_custno) or values['name'],
+                'name': ResPartner and (ResPartner.x_custno or team) and "%s (%s / %s)" % (values['name'], ResPartner.x_custno or '', team) or values['name'],
                 'level': 2,
-                'columns': [{'name': ''}] * 3 + [{'name': self.format_value(sign * v)} for v in values_list],
+                'columns': [{'name': ResPartner.credit_limit}, {'name': format_date(self.env, payment_date)}] + [{'name': ''}] * 3 + [{'name': self.format_value(sign * v)} for v in values_list],
                 'trust': values['trust'],
                 'unfoldable': True,
                 'unfolded': 'partner_%s' % (values['partner_id'],) in options.get('unfolded_lines'),
@@ -71,7 +76,7 @@ class report_account_aged_partner(models.AbstractModel):
                         date_invoice = aml.invoice_id and aml.invoice_id.date_invoice
                         datetime_obj = datetime.datetime.strptime(self._context['date_to'], '%Y-%m-%d')
                         days = date_invoice and (datetime_obj.date() - date_invoice).days or 0
-                        col_list = [payment_term] + col_list[2:] + [days]
+                        col_list = ['', '', payment_term] + col_list[2:] + [days]
                     vals = {
                         'id': aml.id,
                         'name': line_date,
@@ -91,7 +96,7 @@ class report_account_aged_partner(models.AbstractModel):
                 'name': _('Total'),
                 'class': 'total',
                 'level': 2,
-                'columns': [{'name': ''}] * 3 + [{'name': self.format_value(sign * v)} for v in totals],
+                'columns': [{'name': ''}] * 5 + [{'name': self.format_value(sign * v)} for v in totals],
             }
             lines.append(total_line)
         return lines
