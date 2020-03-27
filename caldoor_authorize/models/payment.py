@@ -81,7 +81,7 @@ class PaymentTransaction(models.Model):
         self.ensure_one()
         transaction = AuthorizeAPI(self.acquirer_id)
         tree = transaction.void(self.acquirer_reference or '')
-        if tree.x_response_reason_text:
+        if 'x_response_reason_text' in tree:
             raise ValidationError( ("You can not cancel electronic payment because it’s not longer unsettled transaction"))
         return self._authorize_s2s_validate_tree(tree)
 ##############################
