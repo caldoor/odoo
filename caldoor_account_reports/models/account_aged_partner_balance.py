@@ -72,7 +72,7 @@ class report_account_aged_partner(models.AbstractModel):
                         line_date = format_date(self.env, line_date)
                     col_list = [aml.journal_id.code, aml.account_id.code, self._format_aml_name(aml)]
                     if receivable:
-                        payment_term = receivable and aml.invoice_id and aml.invoice_id.payment_term_id and aml.invoice_id.payment_term_id.name or ''
+                        payment_term = receivable and aml.invoice_id and aml.invoice_id.payment_term_id and aml.invoice_id.payment_term_id.x_termscode or ''
                         date_invoice = aml.invoice_id and aml.invoice_id.date_invoice
                         datetime_obj = datetime.datetime.strptime(self._context['date_to'], '%Y-%m-%d')
                         days = date_invoice and (datetime_obj.date() - date_invoice).days or 0
