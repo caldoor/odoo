@@ -19,7 +19,7 @@ class report_account_aged_partner(models.AbstractModel):
         receivable = 'model' in options and options.get('model') == 'account.aged.receivable'
         if receivable or 'account_type' in context and context.get('account_type') == 'receivable':
             columns = [{}]
-            col_list = [_("Credit Limit"), _("Last Payment Date"), _("Payment Terms"), _("Reference"),  _("Age Days")]
+            col_list = [_("CreditLimit"), _("LastPayment"), _("Terms"), _("Reference"),  _("Age Days")]
             col_day_list = [_("Not due on: %s") % format_date(self.env, options['date']['date']), ("1 - 30"), _("31 - 60"), _("61 - 90"), _("91 - 120"), _("Older"), _("Total")]
             cols_list = col_list + col_day_list
             columns += [
