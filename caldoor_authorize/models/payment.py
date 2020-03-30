@@ -74,6 +74,17 @@ class PaymentTransaction(models.Model):
 
             result = True
         return result
+    
+###############my changes
+    @api.multi
+    def authorize_s2s_void_transaction(self):
+        self.ensure_one()
+        transaction = AuthorizeAPI(self.acquirer_id)
+        tree = transaction.void(self.acquirer_reference or '')
+        if tree['x_response_code'] == 3:
+            raise ValidationError( ("The status of the transaction you are trying to void is not 'Unsettled'! Can not void this transaction."))
+        return self._authorize_s2s_validate_tree(tree)
+##############################
 
     @api.multi
     def authorize_s2s_do_refund(self):
@@ -163,15 +174,17 @@ class AccountPayment(models.Model):
             'type': 'server2server',
         }
 
+    #TODO:fix 
     @api.multi
     def cancel(self):
         electronic_payments = self.filtered(lambda p: (p.payment_method_code == 'electronic') and p.payment_transaction_id)
-        if any([p.payment_date < fields.Date.context_today(p) for p in electronic_payments]):
-            raise ValidationError(_("You can not cancel electronic payment 24 hour after validation."))
+        # if any([p.payment_date < fields.Date.context_today(p) for p in electronic_payments]):
+        #     raise ValidationError(_("You can not cancel electronic payment 24 hour after validation."))
         res = super(AccountPayment, self).cancel()
         for payment in electronic_payments:
             payment.payment_transaction_id.s2s_void_transaction()
         return res
+
 
     @api.multi
     def post(self):
