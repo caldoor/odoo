@@ -7,7 +7,7 @@
                 <field name="inherit_id" ref="account.view_account_payment_form"/>
                 <field name="arch" type="xml">
                     <xpath expr="//form/sheet//field[@name='partner_id']" position="replace">
-                        <field name="partner_id" attrs="{'required': [('state', '=', 'draft'), ('payment_type', 'in', ('inbound', 'outbound'))], 'invisible': [('payment_type', 'not in', ('inbound', 'outbound'))], 'readonly': [('state', '!=', 'draft')]}" context="{'default_is_company': True, 'default_supplier': payment_type == 'outbound', 'default_customer': payment_type == 'inbound', 'ref': True}"/>
+                        <field name="partner_id" attrs="{'required': [('state', '=', 'draft'), ('payment_type', 'in', ('inbound', 'outbound'))], 'invisible': [('payment_type', 'not in', ('inbound', 'outbound'))], 'readonly': [('state', '!=', 'draft')]}" context="{'default_is_company': True, 'default_supplier': payment_type == 'outbound', 'default_customer': payment_type == 'inbound', 'show_attribute':True}"/>
 
                     </xpath>
                 </field>
