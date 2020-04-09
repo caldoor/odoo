@@ -23,10 +23,8 @@ class ResPartner(models.Model):
                 ins = Invoice.search([('partner_id', 'in', s.parts.ids)])
             
             if (not ins is None) and (not partners is None):
-                for i in ins:
-                    for p in partners:
-                        if i.partner_id.id == p.id:
-                            contacts.append(p.id)
+                for i in ins.filtered(lambda x: x.partner_id.id in partners.ids):
+                    contacts.append(i.partner_id.id)
                 
                 partners.filtered(lambda x: x.id in contacts)
 
