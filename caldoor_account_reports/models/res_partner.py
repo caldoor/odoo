@@ -16,10 +16,10 @@ class ResPartner(models.Model):
             contacts = []
             
             if s.parent_id:
-                partners = Partner.search(['|', ('parent_id', '=', s.parent_id.id), ('id', '=', s.parent_id.id)])
+                partners = Partner.search(['|', ('parent_id', '=', s.parent_id.id), '&', ('type', '=', 'invoice'), ('id', '=', s.parent_id.id)])
                 ins = Invoice.search(['&', ('partner_id', 'in', partners.ids), ('state', '=', 'open')])
             else:
-                partners = Partner.search(['|', ('parent_id', '=', s.id), ('id', '=', s.id)])
+                partners = Partner.search(['|', ('parent_id', '=', s.id),'&', ('type', '=', 'invoice'), ('id', '=', s.id)])
                 ins = Invoice.search(['&', ('partner_id', 'in', partners.ids), ('state', '=', 'open')])
             
             if (not ins is None) and (not partners is None):
