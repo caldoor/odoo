@@ -1,8 +1,7 @@
-<!-- -->
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <template id="template_followup_report_inherit_caldoor" inherit_id="account_reports.main_template" primary="True">
+        <template id="account_reports.template_followup_report" inherit_id="account_reports.main_template" primary="True">
             <xpath expr="//h2" position="replace">
                 <div class="row">
                     <div class="col-xl-6">
@@ -24,13 +23,15 @@
                                 <span t-if="partner.country_id"><small>(<t t-esc='partner.country_id.name' />)</small></span>
                             </span>
                         </h2>
-                        <p t-if='context.get("print_mode") != True and invoice_address_id' class='o_account_reports_contact_info'>
-                            <t t-if="invoice_address_id.phone"><i class='fa fa-phone fa-fw' role="img" aria-label="Phone" title="Phone"/><t t-esc="invoice_address_id.phone" /><br /></t>
-                            <t t-if="invoice_address_id.mobile"><i class='fa fa-mobile fa-fw' role="img" aria-label="Mobile" title="Mobile"/><t t-esc="invoice_address_id.mobile" /><br /></t>
-                            <t t-if="invoice_address_id.email">
-                                <a t-att-href="'mailto:' + invoice_address_id.email" title="Send an email">
-                                    <i class='fa fa-envelope' role="img" aria-label="Email"/><t t-esc="' ' + invoice_address_id.email" />
-                                </a>
+                        <p t-if='context.get("print_mode") != True and partner.due_invoice_partner_ids' class='o_account_reports_contact_info'>
+                            <t t-foreach="partner.due_invoice_partner_ids" t-as="p">
+                                <!-- <t t-if="p.phone"><i class='fa fa-phone fa-fw' role="img" aria-label="Phone" title="Phone"/><t t-esc="p.phone" /><br /></t>
+                                <t t-if="p.mobile"><i class='fa fa-mobile fa-fw' role="img" aria-label="Mobile" title="Mobile"/><t t-esc="p.mobile" /><br /></t> -->
+                                <t t-if="p.email">
+                                    <a t-att-href="'mailto:' + p.email" title="Send an email">
+                                        <i class='fa fa-envelope' role="img" aria-label="Email"/><t t-esc="' ' + p.email" />
+                                    </a><br/>
+                                </t>
                             </t>
                         </p>
                     </div>

@@ -34,6 +34,7 @@ CalDoor: Due Invoices
     'depends': ['account', 'account_reports', 'contacts'],
     'data': [
         'views/template.xml',
+        'views/res_partner.xml',
     ],
     'demo': [],
     'qweb': [
