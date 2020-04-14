@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="res_partner_form_custom_caldoor" model="ir.ui.view">
+        <field name="name">res.partner.form.custom.caldoor</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form[1]/sheet[1]/group[1]/group[1]/div[1]" position="after">
+                <field name="x_custno" string="CustNo" help="Doorlister / Passport Cust# " placeholder="Doorlister / Passport Cust# "/>
+                <field name="team_id"/>
+                <field name="credit_limit"/>
+                <field name="x_credit_hold" string="Credit Hold"/>
+            </xpath>
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="x_h_type" string="H Type"/>
+            <xpath expr="//field[@name='vat']" position="move"/>
+            </xpath>
+            <xpath expr="//form[1]/sheet[1]/notebook[1]/page[1]/field[@name='child_ids']/form[1]/sheet[1]/group[1]/group[2]/field[@name='phone']" position="after">
+                <field name="x_fax" string="Fax" widget="phone"/>
+            </xpath>
+            <xpath expr="//form[1]/sheet[1]/notebook[1]/page[1]/field[@name='child_ids']/form[1]" position="after">
+            <tree string="Contacts">
+                <field name="x_custno"/>
+                <field name="display_name" string="Name"/>
+                <field name="team_id"/>
+                <field name="credit_limit"/>
+                <field name="x_credit_hold"/>
+                <field name="x_h_type"/>
+                <field name="x_shipping_notes"/>
+                <field name="function" invisible="1"/>
+                <field name="phone"/>
+                <field name="email"/>
+                <field name="user_id" invisible="1"/>
+                <field name="is_company" invisible="1"/>
+                <field name="country_id" invisible="1"/>
+                <field name="parent_id" invisible="1"/>
+                <field name="active" invisible="1"/>
+            </tree>
+            </xpath>
+            <xpath expr="//field[@name='property_payment_term_id']" position="after">
+                <field name="x_tax_id" string="Tax Code"/>
+                <field name="x_tax_exempt" string="Tax Exempt #"/>
+                <field name="x_discount" string="Discount %"/>
+            </xpath>
+            <xpath expr="//field[@name='barcode']" position="after">
+                <xpath expr="//form[1]/sheet[1]/group[1]/group[2]/field[@name='lang']" position="move"/>
+            </xpath>
+            <xpath expr="//form[1]/sheet[1]/notebook[1]" position="inside">
+            <page name="custom_page_shipping" string="Shipping">
+              <group name="custom_group">
+                <group name="custom_group_left">
+                  <field name="x_shipping_notes" string="Shipping Notes"/>
+                </group>
+                <group name="custom_group_right">
+                  <field name="x_shipvia" string="ShipVia"/>
+                </group>
+              </group>
+            </page>
+            </xpath>
+            <xpath expr="//form[1]/sheet[1]/notebook[1]/page[1]/field[@name='child_ids']/form[1]/sheet[1]/group[1]/group[2]/field[@name='comment']" position="after">
+                <field name="id"/>
+                <field name="x_tax_id"/>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="res_partner_tree_custom_caldoor" model="ir.ui.view">
+        <field name="name">res.partner.tree.custom.caldoor</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='display_name']" position="before">
+                <field name="x_custno"/>
+            </xpath>
+                <xpath expr="//field[@name='display_name']" position="after">
+                <field name="team_id"/>
+                <field name="credit_limit"/>
+                <field name="x_credit_hold"/>
+                <field name="property_payment_term_id"/>
+                <field name="x_tax_id"/>
+                <field name="x_h_type"/>
+                <field name="x_shipping_notes"/>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="res_partner_search_custom_caldoor" model="ir.ui.view">
+        <field name="name">res.partner.search.custom.caldoor</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='salesperson']" position="replace">
+                <filter context="{'group_by': 'team_id'}" name="team_id" string="Sales Team"/>
+            </xpath>
+            <xpath expr="//field[@name='phone']" position="replace">
+                <field name="x_credit_hold"/>
+                <field name="x_tax_id"/>
+            </xpath>
+            <xpath expr="//field[@name='user_id']" position="replace">
+                <field name="team_id"/>
+            </xpath>
+            <xpath expr="//search[1]/field[@name='name']" position="after">
+                <field name="x_custno"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

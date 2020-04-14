@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="sale_order_form_custom_caldoor" model="ir.ui.view">
+        <field name="name">sale.order.form.custom.caldoor</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="context">"{'display_website': True, 'show_address': 1 }"</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_invoice_id']" position="attributes">
+                <attribute name="attrs">{"readonly": [["state","not in",["draft","sent","sale"]]]}</attribute>
+                <attribute name="context">"{'default_type':'invoice', 'show_address': 1}"</attribute>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_shipping_id']" position="attributes">
+                <attribute name="context">"{'default_type':'delivery', 'show_address': 1}"</attribute>
+            </xpath>
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="x_category_id" string="Category" widget="many2one"/>
+                <field name="is_drawerbox" string="DrawerBox" invisible="1"/>
+            </xpath>
+            <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='order_lines']/field[@name='order_line']/tree[1]/field[@name='product_uom_qty']" position="after">
+                <field name="x_width" string="Width"/>
+                <field name="x_depth" string="Depth" attrs="{'column_invisible': [('parent.is_drawerbox', '==', False)]}" />
+                <field name="x_height" string="Height"/>
+                <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='order_lines']/field[@name='order_line']/tree[1]/field[@name='name']" position="move"/>
+                <field name="x_sqft" string="SqFt/Box"/>
+                <field name="x_sqft_price" string="SqFt Price"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
