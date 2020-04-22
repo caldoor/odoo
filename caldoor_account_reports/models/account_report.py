@@ -31,7 +31,7 @@ class AccountFollowupReport(models.AbstractModel):
         Send by mail the followup to the customer
         """
         partner = self.env['res.partner'].browse(options.get('partner_id'))
-        emails = partner.due_invoice_partner_ids.filtered(lambda x: x.email and x.email.strip()).mapped(lambda x: x.email)
+        emails = partner.due_invoice_emails.split(';')
         email = self.env['res.partner'].browse(partner.address_get(['invoice'])['invoice']).email
         options['keep_summary'] = True
         if email and email.strip():
