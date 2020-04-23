@@ -16,7 +16,7 @@ odoo.define('caldoor_account_reports.FollowupFormRenderer', function (require) {
          */
         _addEmail: function (email) {
             var self = this;
-            var p = $('<p></p>').append(`
+            var p = $('<div></div>').append(`
                 <a t-att-href="'mailto:' + ${email}" title="Send an email">
                     <i class='fa fa-envelope' role="img" aria-label="Email"/>${email}
                 </a>
@@ -46,6 +46,7 @@ odoo.define('caldoor_account_reports.FollowupFormRenderer', function (require) {
             var partnerID = this.state.res_id;
             this.options = {};
             this.options.partner_id = partnerID;
+            if (!this.cached_emails) this.cached_emails = {};
 
             var elm = ev.target;
             if (elm.localName === 'i')

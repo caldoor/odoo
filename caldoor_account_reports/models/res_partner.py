@@ -30,26 +30,16 @@ class ResPartner(models.Model):
             else:
                 s.due_invoice_emails = options['email']
 
+    @api.depends('child_ids')
     def _compute_due_invoice_partner_ids(self):
         Partner = self.env['res.partner']
-        Invoice = self.env['account.invoice']
         for s in self:
-            ins = None
             partners = None
-            contacts = []
             
             if s.parent_id:
                 partners = Partner.search(['|', ('id', '=', s.parent_id.id), '&', ('type', '=', 'invoice'), ('parent_id', '=', s.parent_id.id)])
-                ins = Invoice.search(['&', ('partner_id', 'in', partners.ids), ('state', '=', 'open')])
             else:
                 partners = Partner.search(['|', ('id', '=', s.id),'&', ('type', '=', 'invoice'), ('parent_id', '=', s.id)])
-                ins = Invoice.search(['&', ('partner_id', 'in', partners.ids), ('state', '=', 'open')])
-            
-            if (not ins is None) and (not partners is None):
-                for i in ins.filtered(lambda x: x.partner_id.id in partners.ids):
-                    contacts.append(i.partner_id.id)
-                
-                partners = partners.filtered(lambda x: x.id in contacts)
 
             s.due_invoice_partner_ids = partners
             s.due_invoice_emails = ";".join(partners.mapped(lambda x: x.email))

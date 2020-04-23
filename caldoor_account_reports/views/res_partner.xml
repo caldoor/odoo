@@ -27,16 +27,18 @@
                             <!-- <span t-field="partner.due_invoice_partner_ids"  t-field-options='{"widget": "one2many_list"}'/> -->
                             <!-- <br/> -->
                             <t t-foreach="partner.due_invoice_partner_ids" t-as="p">
-                                <!-- <t t-if="p.phone"><i class='fa fa-phone fa-fw' role="img" aria-label="Phone" title="Phone"/><t t-esc="p.phone" /><br /></t>
-                                <t t-if="p.mobile"><i class='fa fa-mobile fa-fw' role="img" aria-label="Mobile" title="Mobile"/><t t-esc="p.mobile" /><br /></t> -->
-                                <t t-if="p.email">
-                                    <a t-att-href="'mailto:' + p.email" title="Send an email">
-                                        <i class='fa fa-envelope' role="img" aria-label="Email"/><t t-esc="' ' + p.email" />
-                                    </a>
-                                    <button name="delete" arial-label="Delete email" class="btn btn-secondary o_account_reports_contact_info_remove">
-                                        <i class="fa fa-trash"/>
-                                    </button>
-                                </t>
+                                <div>
+                                    <!-- <t t-if="p.phone"><i class='fa fa-phone fa-fw' role="img" aria-label="Phone" title="Phone"/><t t-esc="p.phone" /><br /></t>
+                                    <t t-if="p.mobile"><i class='fa fa-mobile fa-fw' role="img" aria-label="Mobile" title="Mobile"/><t t-esc="p.mobile" /><br /></t> -->
+                                    <t t-if="p.email">
+                                        <a t-att-href="'mailto:' + p.email" title="Send an email">
+                                            <i class='fa fa-envelope' role="img" aria-label="Email"/><t t-esc="' ' + p.email" />
+                                        </a>
+                                        <button name="delete" arial-label="Delete email" class="btn btn-secondary o_account_reports_contact_info_remove">
+                                            <i class="fa fa-trash"/>
+                                        </button>
+                                    </t>
+                                </div>
                             </t>
                             <p id='o_account_reports_add_email'>
                                 <input type='email' placeholder='example@domain.com'/>
