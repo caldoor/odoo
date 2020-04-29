@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="account_reports.template_followup_report" inherit_id="account_reports.main_template" primary="True">
+            <xpath expr="//h2" position="replace">
+                <div class="row">
+                    <div class="col-xl-6">
+                        <h2 t-if='context.get("print_mode") != True' class="no_print">
+                            <span>
+                                <span class="dropdown" t-att-data-partner='partner.id'>
+                                    <span data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id='trustDropdown'>
+                                        <i t-if="partner.trust == 'good'" class="fa fa-circle oe-account_followup-trust" style="color: green; font-size: 0.8em;" role="img" aria-label="Good debtor" title="Good debtor"></i>
+                                        <i t-if="partner.trust == 'normal'" class="fa fa-circle oe-account_followup-trust" style="color: grey; font-size: 0.8em;" role="img" aria-label="Normal debtor" title="Normal debtor"></i>
+                                        <i t-if="partner.trust == 'bad'" class="fa fa-circle oe-account_followup-trust" style="color: red; font-size: 0.8em;" role="img" aria-label="Bad debtor" title="Bad debtor"></i>
+                                    </span>
+                                    <div class="dropdown-menu" role="menu" aria-labelledby="trustDropdown">
+                                        <a role='menuitem' class="dropdown-item o_change_trust" data-new-trust='good'><i class="fa fa-circle" style="color: green;"></i> Good Debtor</a>
+                                        <a role='menuitem' class="dropdown-item o_change_trust" data-new-trust='normal'><i class="fa fa-circle" style="color: grey;"></i> Normal Debtor</a>
+                                        <a role='menuitem' class="dropdown-item o_change_trust" data-new-trust='bad'><i class="fa fa-circle" style="color: red;"></i> Bad Debtor</a>
+                                    </div>
+                                </span>
+                                <a action="open_partner_form"><t t-esc='partner.name' /></a>
+                                <span t-if="partner.country_id"><small>(<t t-esc='partner.country_id.name' />)</small></span>
+                            </span>
+                        </h2>
+                        <p t-if='context.get("print_mode") != True and partner.due_invoice_partner_ids' class='o_account_reports_contact_info'>
+                            <!-- <span t-field="partner.due_invoice_partner_ids"  t-field-options='{"widget": "one2many_list"}'/> -->
+                            <!-- <br/> -->
+                            <t t-foreach="partner.due_invoice_partner_ids" t-as="p">
+                                <div>
+                                    <!-- <t t-if="p.phone"><i class='fa fa-phone fa-fw' role="img" aria-label="Phone" title="Phone"/><t t-esc="p.phone" /><br /></t>
+                                    <t t-if="p.mobile"><i class='fa fa-mobile fa-fw' role="img" aria-label="Mobile" title="Mobile"/><t t-esc="p.mobile" /><br /></t> -->
+                                    <t t-if="p.email">
+                                        <a t-att-href="'mailto:' + p.email" title="Send an email">
+                                            <i class='fa fa-envelope' role="img" aria-label="Email"/><t t-esc="' ' + p.email" />
+                                        </a>
+                                        <button name="delete" arial-label="Delete email" class="btn btn-secondary o_account_reports_contact_info_remove">
+                                            <i class="fa fa-trash"/>
+                                        </button>
+                                    </t>
+                                </div>
+                            </t>
+                            <p id='o_account_reports_add_email'>
+                                <input type='email' placeholder='example@domain.com'/>
+                                <button name='plus' arial-label="Add email" class='btn btn-secondary o_account_reports_contact_info_add'>
+                                    <i class='fa fa-plus'/>
+                                </button>
+                            </p>
+                        </p>
+                    </div>
+                    <div class="col-xl-6 no_print mb16" t-if='context.get("print_mode") != True' id='followup-mode'>
+                        <div class="row">
+                            <div class="col-xl-4 d-none d-xl-block"></div>
+                            <div class="col-md-3 col-lg-2 col-xl-4" data-toggle='tooltip' title='Date at which Odoo will remind you to take care of that follow-up if you choose "remind me later" button.'>
+                                <b>Next Reminder Date:</b>
+                                <b><div class='o_account_reports_next_action_date'><t t-esc='partner.payment_next_action_date'/></div></b>
+                                <b><div class='o_account_reports_next_action_date_picker' /></b>
+                            </div>
+                            <div class="col-md-7 col-lg-4">
+                                <div class='btn-group'>
+                                    <button class='btn o_account_reports_followup_auto' data-toggle='tooltip' title='The next reminder date is computed based on what you have defined in the accounting settings.'>Auto</button>
+                                    <button class='btn o_account_reports_followup_manual' data-toggle='tooltip' title='Select this option if you want to manually define the next reminder date.'>Manual</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>
