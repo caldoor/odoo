@@ -99,4 +99,12 @@ class report_account_aged_partner(models.AbstractModel):
                 'columns': [{'name': ''}] * 5 + [{'name': self.format_value(sign * v)} for v in totals],
             }
             lines.append(total_line)
+            total_percent_line = {
+                'id': 0,
+                'name': _('Total Percent'),
+                'class': 'total',
+                'level': 2,
+                'columns': [{'name': ''}] * 5 + [{'name': '{:.2f}'.format(sign * v/total[5]*100) + ' %'} for v in totals],
+            }
+            lines.append(total_percent_line)
         return lines
