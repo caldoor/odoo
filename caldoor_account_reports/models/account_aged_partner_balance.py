@@ -52,11 +52,13 @@ class report_account_aged_partner(models.AbstractModel):
                 payment_date = payment.payment_date
             team = ResPartner.team_id and ResPartner.team_id.name or ''
             values_list = [values['direction'], values['4'], values['3'], values['2'], values['1'], values['0'], values['total']]
+            invoice_dates = [line['line'].invoice_id.date_invoice for line in amls[values['partner_id']] if line.get('line', False) and line['line'].invoice_id]
+            max_age = (datetime.datetime.strptime(self._context['date_to'], '%Y-%m-%d').date() - min(invoice_dates)).days or 0
             vals = {
                 'id': 'partner_%s' % (values['partner_id'],),
                 'name': ResPartner and (ResPartner.x_custno or team) and "%s (%s / %s)" % (values['name'], ResPartner.x_custno or '', team) or values['name'],
                 'level': 2,
-                'columns': [{'name': ResPartner.credit_limit}, {'name': format_date(self.env, payment_date)}] + [{'name': self.format_value(order_total)}, {'name': ''}] + [{'name': self.format_value(sign * v)} for v in values_list],
+                'columns': [{'name': ResPartner.credit_limit}, {'name': format_date(self.env, payment_date)}] + [{'name': self.format_value(order_total)}, {'name': max_age}] + [{'name': self.format_value(sign * v)} for v in values_list],
                 'trust': values['trust'],
                 'unfoldable': True,
                 'unfolded': 'partner_%s' % (values['partner_id'],) in options.get('unfolded_lines'),
