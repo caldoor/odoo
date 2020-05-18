@@ -56,7 +56,7 @@ class report_account_aged_partner(models.AbstractModel):
             max_age = invoice_dates and (datetime.datetime.strptime(self._context['date_to'], '%Y-%m-%d').date() - min(invoice_dates)).days or 0
             vals = {
                 'id': 'partner_%s' % (values['partner_id'],),
-                'name': ResPartner and (ResPartner.x_custno or team) and "%s (%s / %s)" % (values['name'], ResPartner.x_custno or '', team) or values['name'],
+                'name': ResPartner and (ResPartner.x_custno or team) and "%s (%s / %s)" % (values['name'], ResPartner.x_custno or '', ResPartner.property_payment_term_id and ResPartner.property_payment_term_id.name or '') or values['name'],
                 'level': 2,
                 'columns': [{'name': ResPartner.credit_limit}, {'name': format_date(self.env, payment_date)}] + [{'name': self.format_value(order_total)}, {'name': max_age}] + [{'name': self.format_value(sign * v)} for v in values_list],
                 'trust': values['trust'],
