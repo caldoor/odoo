@@ -127,7 +127,7 @@ class AccountPayment(models.Model):
         return {
             'type': 'ir.actions.act_url',
             'target': 'self',
-            'url': self.get_portal_url(),
+            'url': self.get_base_url() + "/my/payment_methods",
         }
 
     @api.onchange('partner_id', 'payment_method_id', 'journal_id')
