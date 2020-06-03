@@ -121,6 +121,15 @@ class AccountPayment(models.Model):
     authorize_refund_transaction_id = fields.Many2one('payment.transaction')
     authorize_payment_token_id = fields.Many2one('payment.token', related='authorize_refund_transaction_id.payment_token_id', string="Authorize stored credit card")
 
+    @api.multi
+    def add_payment(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_url',
+            'target': 'self',
+            'url': self.get_portal_url(),
+        }
+
     @api.onchange('partner_id', 'payment_method_id', 'journal_id')
     def _onchange_set_payment_token_id(self):
         res = super(AccountPayment, self)._onchange_set_payment_token_id()
