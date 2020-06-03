@@ -123,7 +123,6 @@ class AccountPayment(models.Model):
 
     @api.multi
     def add_payment(self):
-        self.ensure_one()
         return {
             'type': 'ir.actions.act_url',
             'target': 'self',
