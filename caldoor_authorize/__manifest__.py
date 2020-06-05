@@ -51,6 +51,7 @@ c) Rejecting will not allow Authorize to be used for payment.
     'data': [
         'data/payment_authorize_data.xml',
         'views/payment_views.xml',
+        'views/payment_portal_templates.xml',
         'views/templates.xml',
     ],
     'demo': [],
