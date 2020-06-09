@@ -158,13 +158,12 @@ class AccountPayment(models.Model):
 
     @api.multi
     def add_payment(self):
-        self.access_url = "/partner/payment_method/"
+        self.access_url = "/partner/{}/{}/payment_method/".format(self.partner_id.id, self.id)
         self.ensure_one()
         return {
             'type': 'ir.actions.act_url',
-            'target': 'new',
+            'target': 'self',
             'url': self.get_portal_url(),
-            'partner_id': self.partner_id
         }
 
     @api.onchange('partner_id', 'payment_method_id', 'journal_id')
