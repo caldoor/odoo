@@ -30,11 +30,12 @@ class PaymentToken(models.Model):
     def authorize_create(self, values):
         if values.get('cc_number'):
             values['cc_number'] = values['cc_number'].replace(' ', '')
+            full_name = values['cc_holder_name'].split()
             acquirer = self.env['payment.acquirer'].browse(values['acquirer_id'])
             expiry = str(values['cc_expiry'][:2]) + str(values['cc_expiry'][-2:])
             partner = self.env['res.partner'].browse(values['partner_id'])
             transaction = AuthorizeAPI(acquirer)
-            res = transaction.create_customer_profile(partner, values['cc_number'], expiry, values['cc_cvc'])
+            res = transaction.create_customer_profile(partner, values['cc_number'], expiry, values['cc_cvc'], full_name)
             if res.get('profile_id') and res.get('payment_profile_id'):
                 card_type = "????"
                 last_digits = values['cc_number'][-4:]
@@ -53,7 +54,7 @@ class PaymentToken(models.Model):
 
                 return {
                     'authorize_profile': res.get('profile_id'),
-                    'name': '%s-%s' % (card_type, last_digits),
+                    'name': '%s - %s' % (card_type, last_digits),
                     'acquirer_ref': res.get('payment_profile_id'),
                 }
             else:
