@@ -107,5 +107,8 @@ class AuthorizeAPI(AuthorizeAPI):
 
         res = dict()
         res['profile_id'] = response.find('customerProfileId').text
-        res['payment_profile_id'] = partner._get_payment_tokens()
+        if not partner._get_payment_tokens():
+            res['payment_profile_id'] = response.find('customerPaymentProfileIdList/numericString').text
+        else:
+            res['payment_profile_id'] = partner._get_payment_tokens().authorize_profile
         return res

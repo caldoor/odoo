@@ -32,4 +32,4 @@ class ResPartner(models.Model):
             for token in self.payment_token_ids[1:]:
                 if last_token.create_date < token.create_date:
                     last_token = token
-        return last_token.authorize_profile
+        return last_token
