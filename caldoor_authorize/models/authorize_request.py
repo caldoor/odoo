@@ -110,5 +110,5 @@ class AuthorizeAPI(AuthorizeAPI):
         if not partner._get_payment_tokens():
             res['payment_profile_id'] = response.find('customerPaymentProfileIdList/numericString').text
         else:
-            res['payment_profile_id'] = partner._get_payment_tokens().authorize_profile
+            res['payment_profile_id'] = partner._get_payment_tokens()
         return res
