@@ -54,7 +54,7 @@ class PaymentToken(models.Model):
 
                 return {
                     'authorize_profile': res.get('profile_id'),
-                    'name': '%s - %s' % (card_type, last_digits),
+                    'name': '%s-%s' % (card_type, last_digits),
                     'acquirer_ref': res.get('payment_profile_id'),
                 }
             else:

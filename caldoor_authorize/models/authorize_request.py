@@ -61,8 +61,10 @@ class AuthorizeAPI(AuthorizeAPI):
         """
         root = self._base_tree('createCustomerProfileRequest')
         profile = etree.SubElement(root, "profile")
-        # merchantCustomerId is ODOO-{partner.id}-{random hex string} truncated to maximum 20 characters
-        etree.SubElement(profile, "merchantCustomerId").text = ('%s' % (partner.x_custno))
+        if partner.x_custno:
+            etree.SubElement(profile, "merchantCustomerId").text = ('%s' % (partner.x_custno))
+        else:
+            etree.SubElement(profile, "merchantCustomerId").text = ('ODOO-%s-%s' % (partner.id, uuid4().hex[:8]))[:20]
         etree.SubElement(profile, "description").text = partner.name
         etree.SubElement(profile, "email").text = partner.email or ''
         payment_profile = etree.SubElement(profile, "paymentProfiles")
@@ -105,5 +107,5 @@ class AuthorizeAPI(AuthorizeAPI):
 
         res = dict()
         res['profile_id'] = response.find('customerProfileId').text
-        res['payment_profile_id'] = response.find('customerPaymentProfileIdList/numericString').text
+        res['payment_profile_id'] = partner._get_payment_tokens()
         return res
