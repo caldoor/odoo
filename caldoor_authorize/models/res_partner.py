@@ -30,5 +30,5 @@ class ResPartner(models.Model):
         if self.payment_token_ids:
             authorize_tokens = self.payment_token_ids.filtered(lambda pt: pt.acquirer_id.provider == 'authorize')
             if authorize_tokens:
-                payment_profile_id = authorize_tokens.sorted(key='create_date desc')[0].authorize_profile
+                payment_profile_id = authorize_tokens.sorted(key='create_date', reverse=True)[0].authorize_profile
         return payment_profile_id
