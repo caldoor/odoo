@@ -60,11 +60,6 @@ class AuthorizeAPI(AuthorizeAPI):
         :rtype: dict
         """
         if not partner._get_payment_token():
-            print("\n")
-            print("\n")
-            print("Check 1")
-            print("\n")
-            print("\n")
             root = self._base_tree('createCustomerProfileRequest')                    
             profile = etree.SubElement(root, "profile")
             if partner.x_custno:
@@ -74,55 +69,30 @@ class AuthorizeAPI(AuthorizeAPI):
             etree.SubElement(profile, "description").text = partner.name
             etree.SubElement(profile, "email").text = partner.email or ''
             payment_profile = etree.SubElement(profile, "paymentProfiles")
-            etree.SubElement(payment_profile, "customerType").text = 'business' if partner.is_company else 'individual'
-            billTo = etree.SubElement(payment_profile, "billTo")
-            etree.SubElement(billTo, "firstName").text = full_name[0]
-            etree.SubElement(billTo, "lastName").text = full_name[1]
-            etree.SubElement(billTo, "address").text = (partner.street or '' + (partner.street2 if partner.street2 else '')) or None
-            
-            missing_fields = [partner._fields[field].string for field in ['city', 'country_id'] if not partner[field]]
-            if missing_fields:
-                raise ValidationError({'missing_fields': missing_fields})
-            
-            etree.SubElement(billTo, "city").text = partner.city
-            etree.SubElement(billTo, "state").text = partner.state_id.name or None
-            etree.SubElement(billTo, "zip").text = partner.zip or ''
-            etree.SubElement(billTo, "country").text = partner.country_id.name or None
-            payment = etree.SubElement(payment_profile, "payment")
-            creditCard = etree.SubElement(payment, "creditCard")
-            etree.SubElement(creditCard, "cardNumber").text = cardnumber
-            etree.SubElement(creditCard, "expirationDate").text = expiration_date
-            etree.SubElement(creditCard, "cardCode").text = card_code
-            etree.SubElement(root, "validationMode").text = 'liveMode'
-        else:
-            print("\n")
-            print("\n")
-            print("Check 2")
-            print("\n")
-            print("\n")            
+        else:        
             root = self._base_tree('createCustomerPaymentProfileRequest')
             etree.SubElement(root, "customerProfileId").text = partner._get_payment_token()
             payment_profile = etree.SubElement(root, "paymentProfile")
-            etree.SubElement(payment_profile, "customerType").text = 'business' if partner.is_company else 'individual'
-            billTo = etree.SubElement(payment_profile, "billTo")
-            etree.SubElement(billTo, "firstName").text = full_name[0]
-            etree.SubElement(billTo, "lastName").text = full_name[1]
-            etree.SubElement(billTo, "address").text = (partner.street or '' + (partner.street2 if partner.street2 else '')) or None
-            
-            missing_fields = [partner._fields[field].string for field in ['city', 'country_id'] if not partner[field]]
-            if missing_fields:
-                raise ValidationError({'missing_fields': missing_fields})
-            
-            etree.SubElement(billTo, "city").text = partner.city
-            etree.SubElement(billTo, "state").text = partner.state_id.name or None
-            etree.SubElement(billTo, "zip").text = partner.zip or ''
-            etree.SubElement(billTo, "country").text = partner.country_id.name or None
-            payment = etree.SubElement(payment_profile, "payment")
-            creditCard = etree.SubElement(payment, "creditCard")
-            etree.SubElement(creditCard, "cardNumber").text = cardnumber
-            etree.SubElement(creditCard, "expirationDate").text = expiration_date
-            etree.SubElement(creditCard, "cardCode").text = card_code
-            etree.SubElement(root, "validationMode").text = 'liveMode'
+        etree.SubElement(payment_profile, "customerType").text = 'business' if partner.is_company else 'individual'
+        billTo = etree.SubElement(payment_profile, "billTo")
+        etree.SubElement(billTo, "firstName").text = full_name[0]
+        etree.SubElement(billTo, "lastName").text = full_name[1]
+        etree.SubElement(billTo, "address").text = (partner.street or '' + (partner.street2 if partner.street2 else '')) or None
+        
+        missing_fields = [partner._fields[field].string for field in ['city', 'country_id'] if not partner[field]]
+        if missing_fields:
+            raise ValidationError({'missing_fields': missing_fields})
+        
+        etree.SubElement(billTo, "city").text = partner.city
+        etree.SubElement(billTo, "state").text = partner.state_id.name or None
+        etree.SubElement(billTo, "zip").text = partner.zip or ''
+        etree.SubElement(billTo, "country").text = partner.country_id.name or None
+        payment = etree.SubElement(payment_profile, "payment")
+        creditCard = etree.SubElement(payment, "creditCard")
+        etree.SubElement(creditCard, "cardNumber").text = cardnumber
+        etree.SubElement(creditCard, "expirationDate").text = expiration_date
+        etree.SubElement(creditCard, "cardCode").text = card_code
+        etree.SubElement(root, "validationMode").text = 'liveMode'
         response = self._authorize_request(root)
 
         # If the user didn't set up authorize.net properly then the response
