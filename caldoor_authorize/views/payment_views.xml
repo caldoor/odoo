@@ -38,6 +38,7 @@
             </xpath>
             <button name="cancel" position="attributes">
                 <attribute name='confirm'>Are you sure you want to cancel this payment? This action can't be undone.</attribute>
+                <attribute name="context">{'s2s_cancel': True}</attribute>
             </button>
         </field>
     </record>

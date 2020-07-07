@@ -181,8 +181,9 @@ class AccountPayment(models.Model):
         # if any([p.payment_date < fields.Date.context_today(p) for p in electronic_payments]):
         #     raise ValidationError(_("You can not cancel electronic payment 24 hour after validation."))
         res = super(AccountPayment, self).cancel()
-        for payment in electronic_payments:
-            payment.payment_transaction_id.s2s_void_transaction()
+        if self.env.context.get('s2s_cancel', False):
+            for payment in electronic_payments:
+                payment.payment_transaction_id.s2s_void_transaction()
         return res
 
 
@@ -227,11 +228,12 @@ class AccountPayment(models.Model):
         done_transactions.write({'state': 'posted'})
         transactions.s2s_do_transaction()
         transactions.write({'is_processed': True})
+        cancelled_payments = self.filtered(lambda pay: pay.state == 'cancelled')
         payments_need_refund = self.filtered(lambda pay: pay.authorize_payment_token_id and not pay.payment_transaction_id)
         refund_transactions = False
         if payments_need_refund and payments_need_refund.ids:
             refund_transactions = payments_need_refund._create_refund_payment_transaction()
-        res = super(AccountPayment, self - payments_need_refund).post()
+        res = super(AccountPayment, self - payments_need_refund - cancelled_payments).post()
         if refund_transactions:
             refund_transactions.authorize_s2s_do_refund()
         transactions._log_payment_transaction_received()
