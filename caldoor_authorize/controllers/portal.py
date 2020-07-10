@@ -31,5 +31,5 @@ class WebsitePayment(WebsitePayment):
         record = request.env['account.payment'].browse([record_id])
         partner = request.env['res.partner'].browse([p_id])
         payment_token = partner.payment_token_ids.sorted(key='create_date', reverse=True)[0]
-        record.update({'payment_token_id': payment_token.id})z
+        record.update({'payment_token_id': payment_token.id})
         return werkzeug.utils.redirect('/web#id={}&action=148&model=account.payment&view_type=form&menu_id=245'.format(record_id))
