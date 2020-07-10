@@ -3,7 +3,7 @@
 from odoo import http
 from odoo.http import request
 from odoo.addons.payment.controllers.portal import WebsitePayment
-import datetime
+import datetime, werkzeug
 
 class WebsitePayment(WebsitePayment):
     @http.route(['/partner/<int:p_id>/<int:record_id>/payment_method/'], type='http', auth="user", website=True)
@@ -30,14 +30,6 @@ class WebsitePayment(WebsitePayment):
     def partner_process_payment(self, p_id, record_id, **kwargs):
         record = request.env['account.payment'].browse([record_id])
         partner = request.env['res.partner'].browse([p_id])
-        payment_tokens = partner.payment_token_ids
-        payment_tokens |= partner.commercial_partner_id.sudo().payment_token_ids
-        latest_token = payment_tokens[0]
-        if not latest_token:
-            latest_token = None
-        for token in payment_tokens[1:]:
-            if latest_token.create_date == datetime.datetime.now().date():
-                latest_token = token
-        if latest_token != None:
-            record.update({'payment_token_id': latest_token.id})
-        return request.redirect('/web#id={}&action=148&model=account.payment&view_type=form&menu_id=175'.format(record_id)) 
+        payment_token = partner.payment_token_ids.sorted(key='create_date', reverse=True)[0]
+        record.update({'payment_token_id': payment_token.id})
+        return werkzeug.utils.redirect('/web#id={}&action=145&model=account.payment&view_type=form&menu_id=178'.format(record_id))
