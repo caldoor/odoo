@@ -17,6 +17,7 @@ class WebsitePayment(WebsitePayment):
         payment_tokens |= partner.commercial_partner_id.sudo().payment_token_ids
         return_url = request.params.get('redirect', '/partner/{}/{}/process_payment/'.format(p_id, record_id))
         values = {
+            'partner_page': True,
             'pms': payment_tokens,
             'acquirers': acquirers,
             'error_message': [kwargs['error']] if kwargs.get('error') else False,
