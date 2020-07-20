@@ -156,7 +156,6 @@ class AccountPayment(models.Model):
 
     authorize_refund_transaction_id = fields.Many2one('payment.transaction')
     authorize_payment_token_id = fields.Many2one('payment.token', related='authorize_refund_transaction_id.payment_token_id', string="Authorize stored credit card")
-    partner_page = fields.Boolean('Is partner payment page', default=False)
 
     @api.multi
     def add_payment(self):
