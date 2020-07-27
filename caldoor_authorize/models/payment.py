@@ -26,6 +26,41 @@ class PaymentToken(models.Model):
     convenience_fee_product_id = fields.Many2one(related="acquirer_id.convenience_fee_product_id")
     convenience_fee_percent = fields.Float(related="acquirer_id.convenience_fee_percent")
 
+    @api.model
+    def authorize_create(self, values):
+        if values.get('cc_number'):
+            values['cc_number'] = values['cc_number'].replace(' ', '')
+            full_name = values['cc_holder_name'].split()
+            acquirer = self.env['payment.acquirer'].browse(values['acquirer_id'])
+            expiry = str(values['cc_expiry'][:2]) + str(values['cc_expiry'][-2:])
+            partner = self.env['res.partner'].browse(values['partner_id'])
+            transaction = AuthorizeAPI(acquirer)
+            res = transaction.create_customer_profile(partner, values['cc_number'], expiry, values['cc_cvc'], full_name)
+            if res.get('profile_id') and res.get('payment_profile_id'):
+                card_type = "????"
+                last_digits = values['cc_number'][-4:]
+                first_two = values['cc_number'][:2]
+                first_four = values['cc_number'][:4]
+                first_six = values['cc_number'][:6]
+                if values['cc_number'][0] == "4":
+                    card_type = "VISA"
+                elif first_four == "6011" or first_two == "65":
+                    card_type = "DISC"
+                elif (int(first_two) >= 51 and int(first_two) <= 55) or (int(first_six) >= 222100 and int(first_six) <= 272099):
+                    card_type = "MSTR"
+                elif first_two == "34" or first_two == "37":
+                    card_type = "AMEX"
+                    last_digits = values['cc_number'][-5:]
+
+                return {
+                    'authorize_profile': res.get('profile_id'),
+                    'name': '%s-%s' % (card_type, last_digits),
+                    'acquirer_ref': res.get('payment_profile_id'),
+                }
+            else:
+                raise ValidationError(_('The Customer Profile creation in Authorize.NET failed.'))
+        else:
+            return values
 
 class PaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
@@ -116,10 +151,21 @@ class PaymentTransaction(models.Model):
 
 
 class AccountPayment(models.Model):
-    _inherit = 'account.payment'
+    _name = 'account.payment'
+    _inherit = ['account.payment', 'portal.mixin']
 
     authorize_refund_transaction_id = fields.Many2one('payment.transaction')
     authorize_payment_token_id = fields.Many2one('payment.token', related='authorize_refund_transaction_id.payment_token_id', string="Authorize stored credit card")
+
+    @api.multi
+    def add_payment(self):
+        self.access_url = "/partner/{}/{}/payment_method/".format(self.partner_id.id, self.id)
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_url',
+            'target': 'self',
+            'url': self.get_portal_url(),
+        }
 
     @api.onchange('partner_id', 'payment_method_id', 'journal_id')
     def _onchange_set_payment_token_id(self):

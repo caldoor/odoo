@@ -14,7 +14,6 @@ class CustomerPortal(CustomerPortal):
             order.payment_option = payment_option
         return True
 
-
     # @http.route()
     # def payment_transaction_token(self, acquirer_id, order_id, save_token=False, access_token=None, **kwargs):
     #     order = request.env['sale.order'].sudo().browse(order_id)

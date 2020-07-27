@@ -18,11 +18,16 @@
             <t t-else="">
               <t t-set="amount_credit" t-value="0.00"/>
             </t>
-            <t t-if="isinstance(acquirers, tuple)">
-                <t t-set="authorize" t-value="acquirers.filtered(lambda a: a.provider == 'authorize')"/>
-                <t t-if="not authorize and isinstance(pms, tuple)">
-                    <t t-set="authorize" t-value="pms.filtered(lambda p: p.provider == 'authorize')"/>
+            <t t-if="isinstance(acquirers, list)">
+                <t t-set="base_acquirers" t-value="()"/>
+                <t t-foreach="acquirers" t-as="acquirer">
+                    <t t-set="base_acquirers" t-value="base_acquirers + acquirer"/>
                 </t>
+                <t t-set="acquirers" t-value="base_acquirers"/>
+            </t>
+            <t t-set="authorize" t-value="acquirers.filtered(lambda a: a.provider == 'authorize')"/>
+            <t t-if="not authorize and isinstance(pms, tuple)">
+                <t t-set="authorize" t-value="pms.filtered(lambda p: p.provider == 'authorize')"/>
             </t>
             <t t-if="authorize and sale_order and not sale_order.has_convenience_fee_applied()">
                 <input type="hidden" t-att-value="fee" name="convenience_fee" id="convenience_fee"/>
@@ -73,6 +78,13 @@
         </xpath>
         <xpath expr="//t[@t-foreach='pms']//input[@name='pm_id']" position="attributes">
             <attribute name="t-att-data-provider">pm.provider</attribute>
+        </xpath>
+        <xpath expr="//div[@class='card-body']/button[@name='delete_pm']" position="replace">
+            <t t-if="not partner_page">
+                <button t-if="mode == 'manage'" name="delete_pm" t-att-value="pm.id" class="btn btn-primary btn-sm float-right">
+                    <i class="fa fa-trash"></i> Delete
+                </button>
+            </t>
         </xpath>
     </template>
     <template inherit_id="sale.sale_order_portal_template" id="sale_order_portal_template">

@@ -24,3 +24,11 @@ class ResPartner(models.Model):
         if sale_order_lines:
             return ','.join(sale_order_lines.mapped('order_id.name'))
         return ''
+
+    def _get_payment_token(self):
+        payment_profile_id = False
+        if self.payment_token_ids:
+            authorize_tokens = self.payment_token_ids.filtered(lambda pt: pt.acquirer_id.provider == 'authorize')
+            if authorize_tokens:
+                payment_profile_id = authorize_tokens.sorted(key='create_date', reverse=True)[0].authorize_profile
+        return payment_profile_id
