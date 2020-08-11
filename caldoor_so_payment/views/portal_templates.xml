@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="sale_pay_order_portal_template"
+              name="Pay sale order portal view"
+              inherit_id="portal.portal_sidebar" primary="True">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            <t t-set="o_portal_fullwidth_alert" groups="sales_team.group_sale_salesman">
+                <t t-call="portal.portal_back_in_edit_mode">
+                    <t t-set="backend_url" t-value="'/web#return_label=Website&amp;model=%s&amp;id=%s&amp;action=%s&amp;view_type=form' % (sale_order._name, sale_order.id, sale_order.env.ref('sale.action_quotations').id)"/>
+                </t>
+            </t>
+            <div class="row mt16 o_portal_sale_sidebar">
+                <!-- Sidebar -->
+                <t t-call="portal.portal_record_sidebar">
+                    <t t-set="classes" t-value="'col-lg-auto d-print-none'"/>
+
+                    <t t-set="title">
+                        <h2 class="mb-0"><b t-field="sale_order.amount_total" data-id="total_amount"/> </h2>
+                    </t>
+                    <t t-set="entries">
+                        <ul class="list-group list-group-flush flex-wrap flex-row flex-lg-column">
+                            <t t-if="not sale_order.is_expired and sale_order.state in ['draft', 'sent']">
+                                <li t-if="sale_order.remaining_validity_days &gt; 0" class="list-group-item">
+                                    <small><b class="text-muted">This offer expires in</b></small>
+                                    <div class="day_counter">
+                                        <i class="fa fa-clock-o" aria-title="Dates" title="Dates"/>
+                                        <t t-esc="sale_order.remaining_validity_days"/>
+                                        <t t-if="sale_order.remaining_validity_days &gt; 1">days</t><t t-else="">day</t>
+                                    </div>
+                                </li>
+                                <li t-if="sale_order.amount_undiscounted - sale_order.amount_untaxed &gt; 0.01" class="list-group-item flex-grow-1">
+                                    <small><b class="text-muted">Your advantage</b></small>
+                                    <small>
+                                        <b t-field="sale_order.amount_undiscounted"
+                                            t-options='{"widget": "monetary", "display_currency": sale_order.pricelist_id.currency_id}'
+                                            style="text-decoration: line-through"
+                                            class="d-block mt-1"
+                                            data-id="amount_undiscounted" />
+                                    </small>
+                                    <t t-if="sale_order.amount_untaxed == sale_order.amount_total">
+                                        <h4 t-field="sale_order.amount_total" class="text-success" data-id="total_amount"/>
+                                    </t>
+                                    <t t-else="">
+                                        <h4 t-field="sale_order.amount_untaxed" class="text-success mb-0" data-id="total_untaxed"/>
+                                        <small>(<span t-field="sale_order.amount_total" data-id="total_amount"/> Incl. tax)</small>
+                                    </t>
+                                </li>
+                            </t>
+
+                            <li t-if="sale_order.user_id" class="list-group-item flex-grow-1">
+                                <div class="small mb-1"><strong class="text-muted">Your Contact</strong></div>
+                                <div class="row flex-nowrap">
+                                    <div class="col flex-grow-0 pr-2">
+                                        <img class="rounded-circle mr4 float-left o_portal_contact_img" t-if="sale_order.user_id.image" t-att-src="image_data_uri(sale_order.user_id.image)" alt="Contact"/>
+                                        <img class="rounded-circle mr4 float-left o_portal_contact_img" t-if="not sale_order.user_id.image" src="/web/static/src/img/placeholder.png" alt="Contact"/>
+                                    </div>
+                                    <div class="col pl-0" style="min-width: 150px">
+                                        <span t-field="sale_order.user_id" t-options='{"widget": "contact", "fields": ["name", "phone"], "no_marker": True}'/>
+                                        <a href="#discussion" class="small"><i class="fa fa-comment"></i> Send message</a>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </t>
+                </t>
+
+                <!-- Page content -->
+                <div id="quote_content" class="col-12 col-lg justify-content-end">
+                    <!-- modal relative to the actions sign and pay -->
+                    <div id="modalaccept">
+                        <div class="row" t-if="not sale_order.has_to_be_signed(True) and sale_order.has_to_be_paid(True)">
+                            <div>
+                                <h4>Validate Order</h4>
+                            </div>
+                            <div id="sign-dialog">
+                                <p>
+                                    <span>By paying this proposal, I agree to the following terms:</span>
+                                    <ul>
+                                        <li><span>Accepted on the behalf of:</span> <b t-field="sale_order.partner_id.commercial_partner_id"/></li>
+                                        <li><span>For an amount of:</span> <b data-id="total_amount" t-field="sale_order.amount_total"/></li>
+                                        <li t-if="sale_order.payment_term_id"><span>With payment terms:</span> <b t-field="sale_order.payment_term_id.note"/></li>
+                                    </ul>
+                                </p>
+                                <div t-if="pms or acquirers" id="payment_method" class="text-left">
+                                    <h3 class="mb24">Pay with</h3>
+                                    <t t-call="payment.payment_tokens_list">
+                                        <t t-set="mode" t-value="'payment'"/>
+                                        <t t-set="submit_txt">Pay &amp; Confirm</t>
+                                        <t t-set="icon_class" t-value="'fa-lock'"/>
+                                        <t t-set="form_action" t-value="sale_order.get_portal_url(suffix='/transaction/token')"/>
+                                        <t t-set="prepare_tx_url" t-value="sale_order.get_portal_url(suffix='/transaction/')"/>
+                                        <t t-set="access_token" t-value="sale_order.access_token"/>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- status messages -->
+                    <div t-if="message == 'sign_ok'" class="alert alert-success alert-dismissable d-print-none" role="status">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">&amp;times;</button>
+                        <strong>Thank You!</strong><br/>
+                        <t t-if="message == 'sign_ok' and sale_order.state in ['sale', 'done']">Your order has been confirmed.</t>
+                        <t t-elif="message == 'sign_ok' and sale_order.has_to_be_paid()">Your order has been signed but still needs to be paid to be confirmed.</t>
+                        <t t-else="">Your order has been signed.</t>
+                    </div>
+
+                    <div t-if="message == 'cant_reject' and sale_order.has_to_be_signed()" class="alert alert-danger alert-dismissable d-print-none" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">&amp;times;</button>
+                        Your order is not in a state to be rejected.
+                    </div>
+
+                    <t t-if="sale_order.transaction_ids">
+                        <t t-call="payment.payment_confirmation_status">
+                            <t t-set="payment_tx_id" t-value="sale_order.get_portal_last_transaction()"/>
+                            <t t-set="reference" t-value="sale_order.reference"/>
+                        </t>
+                    </t>
+
+                    <div t-if="sale_order.state == 'cancel'" class="alert alert-danger alert-dismissable d-print-none" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="close">&amp;times;</button>
+                        <strong>This quotation has been canceled.</strong> <a role="button" href="#discussion"><i class="fa fa-comment"/> Contact us to get a new quotation.</a>
+                    </div>
+
+                    <div t-if="sale_order.state == 'draft'" class="alert alert-warning alert-dismissable d-print-none" role="status">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="close">&amp;times;</button>
+                        <strong>This is a draft quotation.</strong> <a role="button" href="#discussion"><i class="fa fa-comment"/> Contact us to get the final version.</a>
+                    </div>
+
+                    <div t-if="sale_order.is_expired" class="alert alert-warning alert-dismissable d-print-none" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="close">&amp;times;</button>
+                        <strong>This offer expired!</strong> <a role="button" href="#discussion"><i class="fa fa-comment"/> Contact us to get a new quotation.</a>
+                    </div>
+
+                    <!-- chatter -->
+                    <div id="sale_order_communication" class="mt-4">
+                        <h2>Communication</h2>
+                        <t t-call="portal.message_thread">
+                            <t t-set="object" t-value="sale_order"/>
+                        </t>
+                    </div>
+                </div><!-- // #quote_content -->
+            </div>
+        </xpath>
+
+    </template>
+</odoo>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="sales_team_form_inherit_caldoor_so_payment" model="ir.ui.view">
+        <field name="name">crm.team.form.inherit.caldoor_so_payment</field>
+        <field name="model">crm.team</field>
+        <field name="inherit_id" ref="sales_team.crm_team_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='right']" position="inside">
+                <field name="signature" widget="image"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
