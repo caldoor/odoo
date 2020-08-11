@@ -18,6 +18,7 @@ Caldoor: Sale order direct Pay Now Function
     # data files always loaded at installation
     'data': [
         'views/portal_templates.xml',
-        'views/sales_team_views.xml'
+        'views/sales_team_views.xml',
+        'views/sale_order_views.xml',
     ],
 }
