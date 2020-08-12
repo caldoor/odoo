@@ -105,7 +105,7 @@
                     </div>
 
                     <div id="modalaccept">
-                        <div class="row" t-if="not sale_order.has_to_be_signed(True) and sale_order.has_to_be_paid(True)">
+                        <div class="row" t-if="sale_order.has_to_be_paid(True)">
                             <div>
                                 <h4>Validate Order</h4>
                             </div>
