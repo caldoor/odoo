@@ -33,6 +33,9 @@ class CustomerPortal(CustomerPortal):
                 body = _('Quotation viewed by customer')
                 _message_post_helper(res_model='sale.order', res_id=order_sudo.id, message=body, token=order_sudo.access_token, message_type='notification', subtype="mail.mt_note", partner_ids=order_sudo.user_id.sudo().partner_id.ids)
 
+        if order_sudo.state == 'draft':
+            order_sudo.state = 'sent'
+
         if order_sudo.has_to_be_signed(True) and order_sudo.team_id.signature:
             order_sudo.signature =  order_sudo.team_id.signature
             order_sudo.signed_by = order_sudo.user_id.partner_id.name
