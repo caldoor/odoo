@@ -3,7 +3,7 @@
 {
     'name': "Caldoor: Sale order direct Pay Now Function",
     'version': '1.0',
-    'depends': ['portal', 'sale'],
+    'depends': ['portal', 'caldoor_authorize'],
     'author': 'Odoo Inc',
     'license': 'OEEL-1',
     'mainainer': 'Odoo Inc',
