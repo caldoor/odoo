@@ -9,6 +9,6 @@
                 <button name="pay_now" type="object" string="Pay Now"
                         attrs="{'invisible': [('state', '=', 'cancel')]}"/>
             </button>
-        </field>s
+        </field>
     </record>
 </odoo>
