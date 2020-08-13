@@ -6,8 +6,9 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <button name="action_done" position="after">
-                <button name="pay_now" type="object" string="Pay Now"/>
+                <button name="pay_now" type="object" string="Pay Now"
+                        attrs="{'invisible': [('state', '=', 'cancel')]}"/>
             </button>
-        </field>
+        </field>s
     </record>
 </odoo>
