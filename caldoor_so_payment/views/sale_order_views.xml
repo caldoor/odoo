@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="sale_order_form_inherit_caldoor_so_payment" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.caldoor_so_payment</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <button name="action_done" position="after">
+                <button name="pay_now" type="object" string="Pay Now"
+                        attrs="{'invisible': [('state', '=', 'cancel')]}"/>
+            </button>
+        </field>
+    </record>
+</odoo>
