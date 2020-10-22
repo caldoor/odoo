@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from odoo.exceptions import ValidationError, UserError
 from odoo.addons.payment_authorize.models.authorize_request import AuthorizeAPI, error_check
+from odoo.addons.payment.models.payment_acquirer import _partner_split_name
 
 
 class AuthorizeAPI(AuthorizeAPI):
@@ -42,7 +43,7 @@ class AuthorizeAPI(AuthorizeAPI):
 
         return res
  
-    def create_customer_profile(self, partner, cardnumber, expiration_date, card_code, full_name):
+    def create_customer_profile(self, partner, cardnumber, expiration_date, card_code, full_name=''):
         """Create a payment and customer profile in the Authorize.net backend.
 
         Creates a customer profile for the partner/credit card combination and links
@@ -75,8 +76,15 @@ class AuthorizeAPI(AuthorizeAPI):
             payment_profile = etree.SubElement(root, "paymentProfile")
         etree.SubElement(payment_profile, "customerType").text = 'business' if partner.is_company else 'individual'
         billTo = etree.SubElement(payment_profile, "billTo")
-        etree.SubElement(billTo, "firstName").text = full_name[0]
-        etree.SubElement(billTo, "lastName").text = full_name[1]
+        if full_name:
+            etree.SubElement(billTo, "firstName").text = _partner_split_name(full_name)[0]
+            etree.SubElement(billTo, "lastName").text = _partner_split_name(full_name)[1]
+        elif partner.is_company:
+            etree.SubElement(billTo, "firstName").text = ' '
+            etree.SubElement(billTo, "lastName").text = partner.name
+        else:
+            etree.SubElement(billTo, "firstName").text = _partner_split_name(partner.name)[0]
+            etree.SubElement(billTo, "lastName").text = _partner_split_name(partner.name)[1]
         etree.SubElement(billTo, "address").text = (partner.street or '' + (partner.street2 if partner.street2 else '')) or None
         
         missing_fields = [partner._fields[field].string for field in ['city', 'country_id'] if not partner[field]]

@@ -30,7 +30,7 @@ class PaymentToken(models.Model):
     def authorize_create(self, values):
         if values.get('cc_number'):
             values['cc_number'] = values['cc_number'].replace(' ', '')
-            full_name = values['cc_holder_name'].split()
+            full_name = values['cc_holder_name']
             acquirer = self.env['payment.acquirer'].browse(values['acquirer_id'])
             expiry = str(values['cc_expiry'][:2]) + str(values['cc_expiry'][-2:])
             partner = self.env['res.partner'].browse(values['partner_id'])
