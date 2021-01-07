@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="account_journal_form_inherit_caldoor_default_payment">
+            <field name="name">account.journal.form.inherit.caldoor.default.payment</field>
+            <field name="model">account.journal</field>
+            <field name="inherit_id" ref="account.view_account_journal_form"/>
+            <field name="arch" type="xml">
+                <field name="default_credit_account_id" position="after">
+                    <field name="default_payment_method_id"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</odoo>
