@@ -14,7 +14,7 @@
     """,
 
     'author': "Odoo, Inc",
-    'website': "http://www.yourcompany.com",
+    'website': "http://www.odoo.com",
 
     'category': 'Custom Development',
     'version': '0.1',
