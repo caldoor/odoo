@@ -9,17 +9,22 @@ class Partner(models.Model):
     @api.depends('name', 'ref')
     def name_get(self):
         rec = super(Partner,self).name_get()
-        if self.env.context.get('show_attribute'):  
+        invoice = self.env.context.get('show_attribute_inv')
+        if self.env.context.get('show_attribute') or invoice:
             res = []    
             for partner in rec:
                 partner_id = self.env['res.partner'].browse([ partner[0]])
-                 
-                display_value = partner[1]              
+
+                display_value = partner[1]
                 if partner_id.ref:
-                    display_value += ' (Cust# '                   
-                    display_value += partner_id.ref 
-                    display_value += ')'           
-                res.append((partner[0], display_value))        
+                    ref = ' (Cust# %s)' % (partner_id.ref)
+                    if invoice:
+                        value_lst = display_value.split('\n')
+                        value_lst[0] += ref
+                        display_value = "\n".join(value_lst)
+                    else:
+                        display_value += ref
+                res.append((partner[0], display_value))
             return res
         return rec
 

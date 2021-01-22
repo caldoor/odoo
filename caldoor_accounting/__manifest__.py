@@ -24,10 +24,12 @@ this reference number to distinguish them from one another.
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['account'],
+    'depends': ['account_accountant'],
 
     # always loaded
     'data': [
+        'views/account_invoice_views.xml',
+        'views/account_move_views.xml',
         'views/inherit_view_account_payment.xml',
     ],
 }
