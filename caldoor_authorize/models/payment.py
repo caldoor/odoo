@@ -235,63 +235,64 @@ class AccountPayment(models.Model):
     @api.multi
     def post(self):
         # Add convenience_fee
-        if not self.invoice_ids and self.payment_token_id and self.payment_token_id.acquirer_id.provider == 'authorize' and self.payment_method_id.code == 'electronic':
-            con_fee = self.convenience_fee
-            if con_fee > 0:
-                # Separate convenience fees from direct electronic payments
-                Invoice = self.env['account.invoice'].with_context(company_id=self.company_id.id or self.env.user.company_id.id)
-                journal_id = (Invoice.default_get(['journal_id'])['journal_id'])
-                if not journal_id:
-                    raise ValidationError(_("journal is not set"))
-                account_invoice = Invoice.new({'partner_id': self.partner_id.id})
-                account_invoice._onchange_partner_id()
-                accountinvoice = account_invoice._convert_to_write({name: account_invoice[name] for name in account_invoice._cache})
-                accountinvoice.update({
-                    'journal_id': journal_id,
-                    'company_id': self.company_id.id or self.env.user.company_id.id,
-                    'type': 'out_invoice',
-                    'name': 'Convenience Fee',
-                    })
-                invoice = Invoice.create(accountinvoice)
-                product_id = self.payment_token_id.acquirer_id.convenience_fee_product_id
-                InvoiceLine = self.env['account.invoice.line']
-                inv_line = {
-                    'invoice_id': invoice.id,
-                    'product_id': product_id.id, 'quantity': 1}
-                invoice_line = InvoiceLine.new(inv_line)
-                invoice_line._onchange_product_id()
-                inv_line = invoice_line._convert_to_write({name: invoice_line[name] for name in invoice_line._cache})
-                inv_line.update(price_unit=con_fee, invoice_line_tax_ids=False)
-                invoice_line = InvoiceLine.create(inv_line)
-                invoice.action_invoice_open()
-                self.message_post(body=_("Convenience Fee invoice created for payment matching: '<a href=# data-oe-model=account.invoice data-oe-id=%d>%s</a>'" % (invoice.id, invoice.number)))
+        for rec in self:
+            if not rec.invoice_ids and rec.payment_token_id and rec.payment_token_id.acquirer_id.provider == 'authorize' and rec.payment_method_id.code == 'electronic':
+                con_fee = rec.convenience_fee
+                if con_fee > 0:
+                    # Separate convenience fees from direct electronic payments
+                    Invoice = self.env['account.invoice'].with_context(company_id=rec.company_id.id or self.env.user.company_id.id)
+                    journal_id = (Invoice.default_get(['journal_id'])['journal_id'])
+                    if not journal_id:
+                        raise ValidationError(_("journal is not set"))
+                    account_invoice = Invoice.new({'partner_id': rec.partner_id.id})
+                    account_invoice._onchange_partner_id()
+                    accountinvoice = account_invoice._convert_to_write({name: account_invoice[name] for name in account_invoice._cache})
+                    accountinvoice.update({
+                        'journal_id': journal_id,
+                        'company_id': rec.company_id.id or self.env.user.company_id.id,
+                        'type': 'out_invoice',
+                        'name': 'Convenience Fee',
+                        })
+                    invoice = Invoice.create(accountinvoice)
+                    product_id = rec.payment_token_id.acquirer_id.convenience_fee_product_id
+                    InvoiceLine = self.env['account.invoice.line']
+                    inv_line = {
+                        'invoice_id': invoice.id,
+                        'product_id': product_id.id, 'quantity': 1}
+                    invoice_line = InvoiceLine.new(inv_line)
+                    invoice_line._onchange_product_id()
+                    inv_line = invoice_line._convert_to_write({name: invoice_line[name] for name in invoice_line._cache})
+                    inv_line.update(price_unit=con_fee, invoice_line_tax_ids=False)
+                    invoice_line = InvoiceLine.create(inv_line)
+                    invoice.action_invoice_open()
+                    rec.message_post(body=_("Convenience Fee invoice created for payment matching: '<a href=# data-oe-model=account.invoice data-oe-id=%d>%s</a>'" % (invoice.id, invoice.number)))
 
-            self.amount += con_fee
-        payments_need_trans = self.filtered(lambda pay: pay.payment_token_id and not pay.payment_transaction_id)
-        transactions = payments_need_trans._create_payment_transaction()
-        done_transactions = transactions.filtered(lambda trans: trans.state == 'done')
-        done_transactions.write({'state': 'posted'})
-        transactions.s2s_do_transaction()
-        transactions.write({'is_processed': True})
-        payments_need_refund = self.filtered(lambda pay: pay.authorize_payment_token_id and not pay.payment_transaction_id)
-        refund_transactions = False
-        if payments_need_refund and payments_need_refund.ids:
-            refund_transactions = payments_need_refund._create_refund_payment_transaction()
-        res = super(AccountPayment, self - payments_need_refund).post()
-        if refund_transactions:
-            refund_transactions.authorize_s2s_do_refund()
-        transactions._log_payment_transaction_received()
-        # applying outstanding credits if the automatic invoice creation is configured
-        if self.env['ir.config_parameter'].sudo().get_param('sale.automatic_invoice') and not self.env.context.get('bypass_credit_payment'):
-            for invoice in self.mapped('invoice_ids').filtered(lambda i: i.type == 'out_invoice' and i.state == 'open'):
-                invoice._get_outstanding_info_JSON()
-                datas = json.loads(invoice.outstanding_credits_debits_widget)
-                if datas and datas.get('content'):
-                    credit_line = [line for line in datas['content'] if line['amount'] == invoice.residual]
-                    if credit_line:
-                        invoice.assign_outstanding_credit(credit_line[0]['id'])
-                    else:
-                        for line in datas['content']:
-                            if not float_is_zero(invoice.residual, precision_rounding=invoice.currency_id.rounding):
-                                invoice.assign_outstanding_credit(line['id'])
-        return res
+                rec.amount += con_fee
+            payments_need_trans = rec.filtered(lambda pay: pay.payment_token_id and not pay.payment_transaction_id)
+            transactions = payments_need_trans._create_payment_transaction()
+            done_transactions = transactions.filtered(lambda trans: trans.state == 'done')
+            done_transactions.write({'state': 'posted'})
+            transactions.s2s_do_transaction()
+            transactions.write({'is_processed': True})
+            payments_need_refund = rec.filtered(lambda pay: pay.authorize_payment_token_id and not pay.payment_transaction_id)
+            refund_transactions = False
+            if payments_need_refund and payments_need_refund.ids:
+                refund_transactions = payments_need_refund._create_refund_payment_transaction()
+            res = super(AccountPayment, self - payments_need_refund).post()
+            if refund_transactions:
+                refund_transactions.authorize_s2s_do_refund()
+            transactions._log_payment_transaction_received()
+            # applying outstanding credits if the automatic invoice creation is configured
+            if self.env['ir.config_parameter'].sudo().get_param('sale.automatic_invoice') and not self.env.context.get('bypass_credit_payment'):
+                for invoice in rec.mapped('invoice_ids').filtered(lambda i: i.type == 'out_invoice' and i.state == 'open'):
+                    invoice._get_outstanding_info_JSON()
+                    datas = json.loads(invoice.outstanding_credits_debits_widget)
+                    if datas and datas.get('content'):
+                        credit_line = [line for line in datas['content'] if line['amount'] == invoice.residual]
+                        if credit_line:
+                            invoice.assign_outstanding_credit(credit_line[0]['id'])
+                        else:
+                            for line in datas['content']:
+                                if not float_is_zero(invoice.residual, precision_rounding=invoice.currency_id.rounding):
+                                    invoice.assign_outstanding_credit(line['id'])
+            return res
