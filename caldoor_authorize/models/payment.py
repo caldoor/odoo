@@ -295,4 +295,4 @@ class AccountPayment(models.Model):
                             for line in datas['content']:
                                 if not float_is_zero(invoice.residual, precision_rounding=invoice.currency_id.rounding):
                                     invoice.assign_outstanding_credit(line['id'])
-            return res
+        return True
