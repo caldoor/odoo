@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 
 from odoo import api, models, fields, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
 from odoo.tools import float_is_zero, float_compare
 from .authorize_request import AuthorizeAPI
 
@@ -278,21 +278,22 @@ class AccountPayment(models.Model):
             refund_transactions = False
             if payments_need_refund and payments_need_refund.ids:
                 refund_transactions = payments_need_refund._create_refund_payment_transaction()
-            res = super(AccountPayment, self - payments_need_refund).post()
-            if refund_transactions:
-                refund_transactions.authorize_s2s_do_refund()
-            transactions._log_payment_transaction_received()
-            # applying outstanding credits if the automatic invoice creation is configured
-            if self.env['ir.config_parameter'].sudo().get_param('sale.automatic_invoice') and not self.env.context.get('bypass_credit_payment'):
-                for invoice in rec.mapped('invoice_ids').filtered(lambda i: i.type == 'out_invoice' and i.state == 'open'):
-                    invoice._get_outstanding_info_JSON()
-                    datas = json.loads(invoice.outstanding_credits_debits_widget)
-                    if datas and datas.get('content'):
-                        credit_line = [line for line in datas['content'] if line['amount'] == invoice.residual]
-                        if credit_line:
-                            invoice.assign_outstanding_credit(credit_line[0]['id'])
-                        else:
-                            for line in datas['content']:
-                                if not float_is_zero(invoice.residual, precision_rounding=invoice.currency_id.rounding):
-                                    invoice.assign_outstanding_credit(line['id'])
+            if rec.state == 'draft':
+                res = super(AccountPayment, rec - payments_need_refund).post()
+                if refund_transactions:
+                    refund_transactions.authorize_s2s_do_refund()
+                transactions._log_payment_transaction_received()
+                # applying outstanding credits if the automatic invoice creation is configured
+                if self.env['ir.config_parameter'].sudo().get_param('sale.automatic_invoice') and not self.env.context.get('bypass_credit_payment'):
+                    for invoice in rec.mapped('invoice_ids').filtered(lambda i: i.type == 'out_invoice' and i.state == 'open'):
+                        invoice._get_outstanding_info_JSON()
+                        datas = json.loads(invoice.outstanding_credits_debits_widget)
+                        if datas and datas.get('content'):
+                            credit_line = [line for line in datas['content'] if line['amount'] == invoice.residual]
+                            if credit_line:
+                                invoice.assign_outstanding_credit(credit_line[0]['id'])
+                            else:
+                                for line in datas['content']:
+                                    if not float_is_zero(invoice.residual, precision_rounding=invoice.currency_id.rounding):
+                                        invoice.assign_outstanding_credit(line['id'])
         return True
