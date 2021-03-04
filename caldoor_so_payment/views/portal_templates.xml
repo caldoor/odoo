@@ -105,8 +105,8 @@
                     </div>
 
                     <div id="modalaccept">
-                        <div class="row" t-if="sale_order.has_to_be_paid(True)">
-                            <div>
+                        <div t-if="sale_order.has_to_be_paid(True)">
+                            <div class="row" >
                                 <h4>Validate Order</h4>
                             </div>
                             <div id="sign-dialog">
@@ -126,7 +126,9 @@
                                         <t t-set="acquirers" t-value="acquirers.sudo().filtered(lambda aq: request.env.user not in aq.restricted_group_ids.mapped('users'))"/>
                                     </t>
                                 </t>
-                                <div t-if="pms or acquirers" id="payment_method" class="text-left">
+                                <!-- check payment is not allowed on terms or not -->
+                                <t t-set="so_payment" t-if="sale_order and sale_order.payment_term_id" t-value="sale_order.payment_term_id.allow_so_payment"/>
+                                <div t-if="pms or acquirers and so_payment" id="payment_method" class="text-left">
                                     <h3 class="mb24">Pay with</h3>
                                     <t t-call="payment.payment_tokens_list">
                                         <t t-set="mode" t-value="'payment'"/>
@@ -136,6 +138,10 @@
                                         <t t-set="prepare_tx_url" t-value="sale_order.get_portal_url(suffix='/transaction/')"/>
                                         <t t-set="access_token" t-value="sale_order.access_token"/>
                                     </t>
+                                </div>
+                                <!-- if payment is not allowed on terms -->
+                                <div t-if="not so_payment" id="payment_method_else" class="text-left">
+                                    <b>The Payment Terms for this order does not allow Electronic Payment</b>
                                 </div>
                                 <div t-elif="not (pms or acquirers)">
                                     <H4>There are no payment tokens available for this customer.</H4>
@@ -155,5 +161,22 @@
             </div>
         </xpath>
 
+    </template>
+
+    <template id="sale_pay_order_portal_template_modal"
+              name="Pay sale order portal view modal"
+              inherit_id="sale.sale_order_portal_template">
+        <xpath expr="//div[@id='payment_method']" position="before">
+            <t t-set="so_payment" t-if="sale_order and sale_order.payment_term_id" t-value="sale_order.payment_term_id.allow_so_payment"/>
+        </xpath>
+        <xpath expr="//div[@id='payment_method']" position="attributes">
+            <attribute name="t-if">pms or acquirers and so_payment</attribute>
+        </xpath>
+        <xpath expr="//div[@id='payment_method']" position="after">
+            <!-- if payment is not allowed on terms -->
+            <div t-if="not so_payment" id="payment_method_else" class="text-left">
+                <b>The Payment Terms for this order does not allow Electronic Payment</b>
+            </div>
+        </xpath>
     </template>
 </odoo>
