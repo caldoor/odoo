@@ -141,7 +141,7 @@
                                 </div>
                                 <!-- if payment is not allowed on terms -->
                                 <div t-if="not so_payment" id="payment_method_else" class="text-left">
-                                    <b>The Payment Terms for this order does not allow Electronic Payment</b>
+                                    <h5 class="text-danger">The Payment Terms for this order does not allow Electronic Payment</h5>
                                 </div>
                                 <div t-elif="not (pms or acquirers)">
                                     <H4>There are no payment tokens available for this customer.</H4>
@@ -175,7 +175,7 @@
         <xpath expr="//div[@id='payment_method']" position="after">
             <!-- if payment is not allowed on terms -->
             <div t-if="not so_payment" id="payment_method_else" class="text-left">
-                <b>The Payment Terms for this order does not allow Electronic Payment</b>
+                <h5 class="text-danger">The Payment Terms for this order does not allow Electronic Payment</h5>
             </div>
         </xpath>
     </template>
