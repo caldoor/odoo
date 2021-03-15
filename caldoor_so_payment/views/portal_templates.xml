@@ -144,7 +144,7 @@
                                     <h5 class="text-danger">The Payment Terms for this order does not allow Electronic Payment</h5>
                                 </div>
                                 <div t-elif="not (pms or acquirers)">
-                                    <H4>There are no payment tokens available for this customer.</H4>
+                                    <H4 class="text-danger">There are no payment tokens available for this customer.</H4>
                                 </div>
                             </div>
                         </div>
