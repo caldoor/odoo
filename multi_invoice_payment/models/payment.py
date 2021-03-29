@@ -33,6 +33,7 @@ class account_register_payments(models.TransientModel):
     @api.onchange('payment_token_id')
     def onchange_payment_token_id(self):
         if self.payment_token_id.acquirer_id.provider == 'authorize':
+            self.group_invoices = True
             fee = (self.amount * self.payment_token_id.acquirer_id.convenience_fee_percent) / 100
             message = _('Convenience fee of amount %.2f will be added if you select authorize payment') % (fee)
             return {'warning': {'title': '', 'message': message}}
@@ -85,11 +86,4 @@ class account_register_payments(models.TransientModel):
                 invoice.action_invoice_open()
         self.amount = sum(self.invoice_ids.mapped('amount_total'))
         self = self.with_context(bypass_credit_payment=True)
-        action_data = super(account_register_payments, self).create_payments()
-        payment_id = action_data.get('res_id', False)
-        if payment_id:
-            payment = self.env['account.payment'].browse(payment_id)
-            payment.post()
-            if payment.payment_transaction_id:
-                payment.payment_transaction_id._log_payment_transaction_received()
-        return action_data
+        return super(account_register_payments, self).create_payments()
