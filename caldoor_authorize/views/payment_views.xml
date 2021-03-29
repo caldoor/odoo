@@ -39,6 +39,7 @@
             </xpath>
             <button name="cancel" position="attributes">
                 <attribute name='confirm'>Are you sure you want to cancel this payment? This action can't be undone.</attribute>
+                <attribute name="context">{'void_transaction': True}</attribute>
             </button>
         </field>
     </record>
@@ -51,6 +52,16 @@
             <xpath expr="//field[@name='payment_method_id']" position="after">
                 <field name="authorize_refund_transaction_id" attrs="{'invisible': ['|', ('payment_method_code', '!=', 'authorize_ct'), '|', ('partner_id', '=', False), ('payment_type', '=', 'transfer')], 'required': [('payment_method_code', '=', 'authorize_ct')], 'readonly': [('state', '!=', 'draft')]}" options="{'no_create': True}"/>
                 <field name="authorize_payment_token_id" attrs="{'invisible': ['|', ('authorize_refund_transaction_id', '=', False), '|', ('payment_method_code', '!=', 'authorize_ct'), '|', ('partner_id', '=', False), ('payment_type', '=', 'transfer')]}" options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="payment_transaction_form_inherit_caldoor_authorize" model="ir.ui.view">
+        <field name="name">payment.transaction.form.inherit.caldoor_authorize</field>
+        <field name="model">payment.transaction</field>
+        <field name="inherit_id" ref="payment.transaction_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_void']" position="attributes">
+                <attribute name="context">{'void_transaction': True}</attribute>
             </xpath>
         </field>
     </record>

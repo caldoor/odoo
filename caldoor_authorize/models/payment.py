@@ -220,15 +220,16 @@ class AccountPayment(models.Model):
             'type': 'server2server',
         }
 
-    #TODO:fix 
     @api.multi
     def cancel(self):
         electronic_payments = self.filtered(lambda p: (p.payment_method_code == 'electronic') and p.payment_transaction_id)
         # if any([p.payment_date < fields.Date.context_today(p) for p in electronic_payments]):
         #     raise ValidationError(_("You can not cancel electronic payment 24 hour after validation."))
         res = super(AccountPayment, self).cancel()
-        for payment in electronic_payments:
-            payment.payment_transaction_id.s2s_void_transaction()
+        # only void transaction if user clicked cancel button from the UI.
+        if self.env.context.get('void_transaction'):
+            for payment in electronic_payments:
+                payment.payment_transaction_id.s2s_void_transaction()
         return res
 
 
@@ -273,6 +274,12 @@ class AccountPayment(models.Model):
         done_transactions.write({'state': 'posted'})
         transactions.s2s_do_transaction()
         transactions.write({'is_processed': True})
+        # need to remove cancelled payment from the self.
+        # payment cancelled due to error from authorize.
+        cancelled_transactions = transactions.filtered(lambda trans: trans.state == 'cancel')
+        cancelled_payments = cancelled_transactions and cancelled_transactions.mapped('payment_id') or False
+        if cancelled_payments:
+            self = self - cancelled_payments
         payments_need_refund = self.filtered(lambda pay: pay.authorize_payment_token_id and not pay.payment_transaction_id)
         refund_transactions = False
         if payments_need_refund and payments_need_refund.ids:
