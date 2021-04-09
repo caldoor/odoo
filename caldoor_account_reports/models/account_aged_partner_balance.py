@@ -156,7 +156,6 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                 'start': (i!=0 and stop.strftime('%Y-%m-%d') or False),
             }
             start = stop
-        print(periods)
 
         res = []
         total = []
