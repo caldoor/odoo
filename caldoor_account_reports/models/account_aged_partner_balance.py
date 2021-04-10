@@ -82,6 +82,10 @@ class report_account_aged_partner(models.AbstractModel):
                     if receivable:
                         payment_term = receivable and aml.invoice_id and aml.invoice_id.payment_term_id and aml.invoice_id.payment_term_id.x_termscode or ''
                         line_name = line_name + ' ' + payment_term
+                    if aml.invoice_id and aml.invoice_id.name:
+                        line_name = line_name + ' ' + aml.invoice_id.name
+                    if aml.invoice_id and aml.invoice_id.origin:
+                        line_name = line_name + ' ' + aml.invoice_id.origin
                     if not self._context.get('no_format'):
                         line_date = line_name
                     col_list = [aml.journal_id.code, aml.account_id.code, self._format_aml_name(aml)]
@@ -98,7 +102,7 @@ class report_account_aged_partner(models.AbstractModel):
                         'caret_options': caret_type,
                         'level': 4,
                         'parent_id': 'partner_%s' % (values['partner_id'],),
-                        'columns': [{'name': v} for v in  col_list]+ \
+                        'columns': [{'name': v} for v in  col_list] + \
                                    [{'name': v} for v in [line['period'] == 5-i and self.format_value(sign * line['amount']) or '' for i in range(6)]],
                         'action_context': aml.get_action_context(),
                     }
