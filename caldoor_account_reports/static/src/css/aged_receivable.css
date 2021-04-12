@@ -3,3 +3,8 @@
     max-width: 100% !important;
   }
 }
+.o_account_reports_page,
+.o_account_report_line {
+    white-space: nowrap;
+    text-align: left;
+}
