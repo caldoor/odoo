@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <template id="assets_financial_report" inherit_id="account_reports.assets_financial_report">
+            <xpath expr="//link" position="after">
+                <link rel="stylesheet" type="text/css" href="/caldoor_account_reports/static/src/css/aged_receivable.css"/>
+            </xpath>
+        </template>
         <template id="account_reports_backend_inherit" inherit_id="account_reports.account_reports_backend" active="True">
             <xpath expr="//link" position="after">
                 <script type="text/javascript" src="/caldoor_account_reports/static/src/js/followup_form_renderer.js"/>
