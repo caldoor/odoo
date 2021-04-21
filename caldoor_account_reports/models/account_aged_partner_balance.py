@@ -48,7 +48,8 @@ class report_account_aged_partner(models.AbstractModel):
             if line_id and 'partner_%s' % (values['partner_id'],) != line_id:
                 continue
             ResPartner = self.env['res.partner'].browse(values['partner_id'])
-            payment = self.env['account.payment'].search([('partner_id', '=', values['partner_id'])], limit=1)
+            payment = self.env['account.payment'].search([('partner_id', '=', values['partner_id']),
+                                                          ('payment_date', '<=', self._context['date_to'])], limit=1)
             payment_date = False
             open_orders = self.env['sale.order'].search([('partner_id', 'child_of', values['partner_id']),
                                                          ('invoice_status', '!=', 'invoiced')])
