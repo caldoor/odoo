@@ -48,7 +48,8 @@ class report_account_aged_partner(models.AbstractModel):
             if line_id and 'partner_%s' % (values['partner_id'],) != line_id:
                 continue
             ResPartner = self.env['res.partner'].browse(values['partner_id'])
-            payment = self.env['account.payment'].search([('partner_id', '=', values['partner_id'])], limit=1)
+            payment = self.env['account.payment'].search([('partner_id', '=', values['partner_id']),
+                                                          ('payment_date', '<=', self._context['date_to'])], limit=1)
             payment_date = False
             open_orders = self.env['sale.order'].search([('partner_id', 'child_of', values['partner_id']),
                                                          ('invoice_status', '!=', 'invoiced')])
@@ -151,7 +152,11 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         for i in range(5)[::-1]:
             stop = start - relativedelta(days=period_length)
             period_name = str((5-(i+1)) * period_length + 1) + '-' + str((5-i) * period_length)
-            period_stop = (start - relativedelta(days=1)).strftime('%Y-%m-%d')
+            # period_stop = (start - relativedelta(days=1)).strftime('%Y-%m-%d')
+            if i == 4:
+                period_stop = start.strftime('%Y-%m-%d')
+            else:
+                period_stop = (start - relativedelta(days=1)).strftime('%Y-%m-%d')
             if i == 0:
                 period_name = '+' + str(4 * period_length)
             periods[str(i)] = {
