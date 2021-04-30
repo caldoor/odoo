@@ -19,9 +19,6 @@ class PaymentToken(models.Model):
 
     @api.multi
     def name_get(self):
-        # include_last_transaction_date = self._context.get('include_last_transaction_date', False)
-        # if not include_last_transaction_date:
-        #     return super(PaymentToken, self).name_get()
         names = []
         for token in self:
             token_name = token.name
