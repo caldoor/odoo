@@ -5,13 +5,16 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="sale.res_partner_view_buttons" />
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='sale_order_count']/ancestor-or-self::button" position="after">
-                <button type="object" class="oe_stat_button" icon="fa-hourglass" name="action_view_wip">
+            <xpath expr="//field[@name='sale_order_count']/ancestor-or-self::button" position="replace">
+                <button type="action" class="oe_stat_button" icon="fa-usd" name="396">
                     <div class="o_form_field o_stat_info">
                         <span class="o_stat_value">
+                            <field name="sale_order_count" />
+                            <span style="color:red;float:right" >
                             <field name="wip_status" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                            </span>
                         </span>
-                        <span class="o_stat_text">WIP Status</span>
+                        <span class="o_stat_text">Open Orders</span>
                     </div>
                 </button>
             </xpath>
