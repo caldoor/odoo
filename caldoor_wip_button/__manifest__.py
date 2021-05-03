@@ -16,6 +16,7 @@
     'depends': ['sale', 'sale_stock'],
     'data': [
         'views/res_partner.xml',
+        'views/sale.xml',
     ],
     'installable': True,
     'application': False,
