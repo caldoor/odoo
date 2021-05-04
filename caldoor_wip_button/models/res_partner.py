@@ -9,6 +9,6 @@ class ResPartner(models.Model):
 
     def _compute_wip_status(self):
         for rec in self:
-            res = self.env['sale.order'].search([('partner_id', '=', rec.id)])
+            res = self.env['sale.order'].search([('partner_id', '=', rec.id), ('invoice_status', '!=', 'invoiced')])
             sum_total = sum(order.amount_total for order in res)
             rec.wip_status = sum_total
