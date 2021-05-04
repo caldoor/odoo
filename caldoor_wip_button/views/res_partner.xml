@@ -10,7 +10,7 @@
                     <div class="o_form_field o_stat_info">
                         <span class="o_stat_value">
                             <field name="sale_order_count" />
-                            <span style="color:red;float:right" >
+                            <span style="color:red;float:right;padding-left:0.5em" >
                             <field name="wip_status" widget='monetary' options="{'currency_field': 'currency_id'}"/>
                             </span>
                         </span>
