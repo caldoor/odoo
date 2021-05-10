@@ -15,9 +15,10 @@
     'category': 'Custom Development',
 
     # any module necessary for this one to work correctly
-    'depends': ['sale', 'payment'],
+    'depends': ['account', 'sale', 'payment', 'caldoor_authorize'],
     'data': [
-        'views/payment_portal_templates.xml'
+        'views/payment_portal_templates.xml',
+        'views/payment_views.xml',
     ],
     'installable': True,
     'application': False,

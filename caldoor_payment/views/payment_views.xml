@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="payment_token_tree_view_inherit_caldoor" model="ir.ui.view">
+        <field name="name">payment.token.tree.inherit.caldoor</field>
+        <field name="model">payment.token</field>
+        <field name="inherit_id" ref="payment.payment_token_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="contact_name"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="payment_token_form_view_inherit_caldoor" model="ir.ui.view">
+        <field name="name">payment.token.tree.inherit.caldoor</field>
+        <field name="model">payment.token</field>
+        <field name="inherit_id" ref="payment.payment_token_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="contact_name"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
