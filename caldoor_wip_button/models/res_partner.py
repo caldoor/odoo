@@ -24,5 +24,5 @@ class ResPartner(models.Model):
 
     def view_open_orders(self):
         action_data = self.env.ref("sale.act_res_partner_2_sale_order").read()[0]
-        action_data.update({"domain": [("invoice_status", "!=", "invoiced")]})
+        action_data.update({"domain": [("invoice_status", "!=", "invoiced"), ("state", "!=", "cancel")]})
         return action_data
