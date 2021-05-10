@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="sale.res_partner_view_buttons" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='sale_order_count']/ancestor-or-self::button" position="replace">
-                <button type="action" class="oe_stat_button" icon="fa-usd" name="%(sale.act_res_partner_2_sale_order)d">
+                <button type="object" class="oe_stat_button" icon="fa-usd" name="view_open_orders">
                     <div class="o_form_field o_stat_info">
                         <span class="o_stat_value">
                             <field name="sale_order_count" />
