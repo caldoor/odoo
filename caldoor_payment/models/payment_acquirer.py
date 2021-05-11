@@ -28,13 +28,15 @@ class PaymentToken(models.Model):
             if token.contact_name:
                 token_name += ' %s' % token.contact_name
             if token.last_successful_transaction_date:
-
                 token_name += ' %s' % token._get_formatted_time()
             names.append((token.id, token_name))
         return names
 
     def _get_formatted_time(self):
         self.ensure_one()
-        timezone = tz.gettz('America/Los_Angeles')
-        transaction_date_pacific = self.last_successful_transaction_date.astimezone(timezone)
-        return transaction_date_pacific.strftime('%m/%d/%Y %I:%M%p')
+        if self.last_successful_transaction_date:
+            timezone = tz.gettz('America/Los_Angeles')
+            transaction_date_pacific = self.last_successful_transaction_date.astimezone(timezone)
+            return transaction_date_pacific.strftime('%m/%d/%Y %I:%M%p')
+        else:
+            return None
