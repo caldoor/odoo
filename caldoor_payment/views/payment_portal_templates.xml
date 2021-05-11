@@ -3,7 +3,7 @@
     <template id="payment_tokens_list_inherit_last_successful_date" inherit_id="payment.payment_tokens_list">
         <xpath expr="//button[@name='delete_pm']" position="before">
             <t t-esc="pm.contact_name"/>
-            <t t-esc="pm.last_successful_transaction_date"/>
+            <t t-esc="pm._get_formatted_time()"/>
         </xpath>
     </template>
 </odoo>
