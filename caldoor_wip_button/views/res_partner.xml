@@ -9,9 +9,7 @@
                 <button type="object" class="oe_stat_button" icon="fa-usd" name="view_open_orders">
                     <div class="o_form_field o_stat_info">
                         <span class="o_stat_value">
-                            <span style="color:red" >
                             <field name="wip_status" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-                            </span>
                         </span>
                         <span class="o_stat_text">Open Orders</span>
                     </div>
