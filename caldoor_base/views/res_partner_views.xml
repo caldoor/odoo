@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_caldoor" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.caldoor</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='x_credit_hold']" position="replace">
+                <label for="x_credit_hold" attrs="{'invisible': [('x_credit_hold', '=', False)]}" style="color: red;"/>
+                <field name="x_credit_hold" nolabel="1" attrs="{'invisible': [('x_credit_hold', '=', False)]}"/>
+                <label for="x_credit_hold" attrs="{'invisible': [('x_credit_hold', '=', True)]}"/>
+                <field name="x_credit_hold" nolabel="1" attrs="{'invisible': [('x_credit_hold', '=', True)]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
