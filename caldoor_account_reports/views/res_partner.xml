@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <record id="res_partner_view_form_inherit_caldoor" model="ir.ui.view">
+            <field name="name">res.partner.view.form.inherit.caldoor</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="groups_id" eval="[(4, ref('account.group_account_invoice'))]"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='open_action_followup']/div" position="replace">
+                    <div class="o_field_widget o_stat_info" attrs="{'invisible': [('total_overdue', '!=', 0)]}">
+                        <field name="total_overdue" invisible="1"/>
+                        <span class="o_stat_value"><field name="total_due" widget='monetary' options="{'currency_field': 'currency_id'}"/></span>
+                        <span class="o_stat_text">Due</span>
+                    </div>
+                    <div class="o_field_widget o_stat_info" attrs="{'invisible': [('total_overdue', '=', 0)]}">
+                        <span class="o_stat_value"><field name="total_overdue" widget='monetary' options="{'currency_field': 'currency_id'}"/></span>
+                        <span class="o_stat_text">Past Due</span>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
         <template id="account_reports.template_followup_report" inherit_id="account_reports.main_template" primary="True">
             <xpath expr="//h2" position="replace">
                 <div class="row">
