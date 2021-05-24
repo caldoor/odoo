@@ -8,12 +8,8 @@
             <field name="groups_id" eval="[(4, ref('account.group_account_invoice'))]"/>
             <field name="arch" type="xml">
                 <xpath expr="//button[@name='open_action_followup']/div" position="replace">
-                    <div class="o_field_widget o_stat_info" attrs="{'invisible': [('total_overdue', '!=', 0)]}">
-                        <field name="total_overdue" invisible="1"/>
-                        <span class="o_stat_value"><field name="total_due" widget='monetary' options="{'currency_field': 'currency_id'}"/></span>
-                        <span class="o_stat_text">Due</span>
-                    </div>
-                    <div class="o_field_widget o_stat_info" attrs="{'invisible': [('total_overdue', '=', 0)]}">
+                    <field name="total_due" invisible="1"/>
+                    <div class="o_field_widget o_stat_info">
                         <span class="o_stat_value"><field name="total_overdue" widget='monetary' options="{'currency_field': 'currency_id'}"/></span>
                         <span class="o_stat_text">Past Due</span>
                     </div>
