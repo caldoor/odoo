@@ -10,7 +10,7 @@
     'author': 'Odoo Inc',
     'description': """
         Task ID: 2500278
-        - Changes
+        - Add Stat button to display open invoices
     """,
     'category': 'Custom Development',
 
