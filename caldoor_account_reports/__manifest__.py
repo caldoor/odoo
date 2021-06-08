@@ -29,6 +29,11 @@ CalDoor: Due Invoices
 1. List all email ID of the type "Invoice Address" ONLY upon clicking on the DUE button (Note: Other email Ids from different "types" under child contact will not be displayed)
 2. "trash" icon (button) will allow to remove the email Ids or provide pick and chose functionality - click action will exclude the email from the recipients' list 
 3. A new text field can be created that will accept the input "email ID" however it won't be stored anywhere - it will be a one-time functionality - This field should be able to accept more than one email ID (should be of nature many to many) 
+
+CalDoor: Past Due
+=================================
+1. Make Due stat button "Past Due" and display only overdue amount
+2. Change Total Overdue to Past Due
     """,
     'category': 'Custom Development',
     'depends': ['account', 'account_reports', 'contacts'],
