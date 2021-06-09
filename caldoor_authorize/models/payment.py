@@ -4,9 +4,8 @@ import json
 import logging
 from datetime import datetime
 
-from odoo import api, models, fields
-from odoo.addons.payment.models.payment_acquirer import ValidationError
-from odoo.exceptions import UserError
+from odoo import api, models, fields, _
+from odoo.exceptions import ValidationError
 from odoo.tools import float_is_zero, float_compare
 from .authorize_request import AuthorizeAPI
 
@@ -19,12 +18,6 @@ class PaymentAcquirerAuthorize(models.Model):
     convenience_fee_product_id = fields.Many2one('product.product', string='Convenience Fee (Product)')
     convenience_fee_percent = fields.Float(string='Convenience Fee(%)')
     restricted_group_ids = fields.Many2many("res.groups", help="Hide payment method for users belongs to these groups.")
-
-    @api.multi
-    def authorize_test_credentials(self):
-        self.ensure_one()
-        transaction = AuthorizeAPI(self.acquirer_id)
-        return transaction.test_authenticate()
 
 
 class PaymentToken(models.Model):
@@ -155,82 +148,6 @@ class PaymentTransaction(models.Model):
                         self.amount,
                     )
                 )
-
-    @api.multi
-    def _authorize_form_validate(self, data):
-        if self.state == 'done':
-            _logger.warning('Authorize: trying to validate an already validated tx (ref %s)' % self.reference)
-            return True
-        status_code = int(data.get('x_response_code', '0'))
-        if status_code == self._authorize_valid_tx_status:
-            if data.get('x_type').lower() in ['auth_capture', 'prior_auth_capture']:
-                self.write({
-                    'acquirer_reference': data.get('x_trans_id'),
-                    'date': fields.Datetime.now(),
-                })
-                self._set_transaction_done()
-            elif data.get('x_type').lower() in ['auth_only']:
-                self.write({'acquirer_reference': data.get('x_trans_id')})
-                self._set_transaction_authorized()
-            if self.partner_id and not self.payment_token_id and \
-                    (self.type == 'form_save' or self.acquirer_id.save_token == 'always'):
-                transaction = AuthorizeAPI(self.acquirer_id)
-                res = transaction.create_customer_profile_from_tx(self.partner_id, self.acquirer_reference)
-                if res:
-                    token_id = self.env['payment.token'].create({
-                        'authorize_profile': res.get('profile_id'),
-                        'name': res.get('name'),
-                        'acquirer_ref': res.get('payment_profile_id'),
-                        'acquirer_id': self.acquirer_id.id,
-                        'partner_id': self.partner_id.id,
-                    })
-                    self.payment_token_id = token_id
-
-                    if self.payment_token_id:
-                        self.payment_token_id.verified = True
-            return True
-        elif status_code == self._authorize_pending_tx_status:
-            self.write({'acquirer_reference': data.get('x_trans_id')})
-            self._set_transaction_pending()
-            return True
-        elif status_code == self._authorize_cancel_tx_status:
-            self.write({
-                'acquirer_reference': data.get('x_trans_id'),
-                'state_message': data.get('x_response_reason_text'),
-            })
-            self._set_transaction_cancel()
-            return True
-        else:
-            error = data.get('x_response_reason_text')
-            _logger.info(error)
-            self.write({
-                'state_message': error,
-                'acquirer_reference': data.get('x_trans_id'),
-            })
-            self._set_transaction_cancel()
-            return False
-
-    @api.multi
-    def authorize_s2s_do_transaction(self, **data):
-        self.ensure_one()
-        transaction = AuthorizeAPI(self.acquirer_id)
-
-        if not self.payment_token_id.authorize_profile:
-            raise UserError(_('Invalid token found: the Authorize profile is missing.'
-                              'Please make sure the token has a valid acquirer reference.'))
-
-        if not self.acquirer_id.capture_manually:
-            res = transaction.auth_and_capture(self.payment_token_id, self.amount, self.reference)
-        else:
-            res = transaction.authorize(self.payment_token_id, self.amount, self.reference)
-        return self._authorize_s2s_validate_tree(res)
-
-    @api.multi
-    def authorize_s2s_capture_transaction(self):
-        self.ensure_one()
-        transaction = AuthorizeAPI(self.acquirer_id)
-        tree = transaction.capture(self.acquirer_reference or '', self.amount)
-        return self._authorize_s2s_validate_tree(tree)
 
 
 class AccountPayment(models.Model):

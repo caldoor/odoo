@@ -1,228 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from lxml import etree, objectify
+from lxml import etree
 from uuid import uuid4
-import requests
+
 from odoo.exceptions import ValidationError, UserError
-from odoo.addons.payment_authorize.models.authorize_request import AuthorizeAPI, error_check, strip_ns, XMLNS, _logger
+from odoo.addons.payment_authorize.models.authorize_request import AuthorizeAPI, error_check
 
 
 class AuthorizeAPI(AuthorizeAPI):
-
-    # method over-ridden to add functionality for avs error checking
-    def _authorize_request(self, data):
-        _logger.info('in request module for new dev')
-        """Encode, send and process the request to the Authorize.net API.
-        Encodes the xml data and process the response. Note that only a basic
-        processing is done at this level (namespace cleanup, basic error management).
-        :param etree._Element data: etree data to process
-        """
-        logged_data = data
-        data = etree.tostring(data, encoding='utf-8')
-        for node_to_remove in ['//merchantAuthentication', '//creditCard']:
-            for node in logged_data.xpath(node_to_remove):
-                node.getparent().remove(node)
-        logged_data = str(etree.tostring(logged_data, encoding='utf-8', pretty_print=True)).replace(r'\n', '\n')
-        _logger.info('_authorize_request: Sending values to URL %s, values:\n%s', self.url, logged_data)
-
-        r = requests.post(self.url, data=data, headers={'Content-Type': 'text/xml'})
-        r.raise_for_status()
-        response = strip_ns(r.content, XMLNS)
-
-        logged_data = etree.XML(r.content)
-        logged_data = str(etree.tostring(logged_data, encoding='utf-8', pretty_print=True)).replace(r'\n', '\n')
-        _logger.info('_authorize_request: Values received\n%s', logged_data)
-
-        # -------------custom code starts here---------------
-
-        # if transaction response has errors, then resultcode type is changed to error.
-        transaction_errors = response.find('transactionResponse/errors')
-        if transaction_errors is not None:
-            response.find('messages/resultCode').text = 'Error'
-
-        # -------------custom code ends here------------------
-
-        logged_data = etree.XML(r.content)
-        logged_data = str(etree.tostring(logged_data, encoding='utf-8', pretty_print=True)).replace(r'\n', '\n')
-        _logger.info('_authorize_request: Values received\n%s', logged_data)
-
-        print(response)
-        return response
-
-    # Transaction management
-    def auth_and_capture(self, token, amount, reference):
-        """Authorize and capture a payment for the given amount.
-        Authorize and immediately capture a payment for the given payment.token
-        record for the specified amount with reference as communication.
-        :param record token: the payment.token record that must be charged
-        :param str amount: transaction amount (up to 15 digits with decimal point)
-        :param str reference: used as "invoiceNumber" in the Authorize.net backend
-        :return: a dict containing the response code, transaction id and transaction type
-        :rtype: dict
-        """
-        root = self._base_tree('createTransactionRequest')
-        tx = etree.SubElement(root, "transactionRequest")
-        etree.SubElement(tx, "transactionType").text = "authCaptureTransaction"
-        etree.SubElement(tx, "amount").text = str(amount)
-        profile = etree.SubElement(tx, "profile")
-        etree.SubElement(profile, "customerProfileId").text = token.authorize_profile
-        payment_profile = etree.SubElement(profile, "paymentProfile")
-        etree.SubElement(payment_profile, "paymentProfileId").text = token.acquirer_ref
-        order = etree.SubElement(tx, "order")
-        etree.SubElement(order, "invoiceNumber").text = reference[:20]
-        response = self._authorize_request(root)
-        res = dict()
-        (has_error, error_msg) = error_check(response)
-        if has_error:
-            res['x_response_code'] = self.AUTH_ERROR_STATUS
-            res['x_response_reason_text'] = error_msg
-            return res
-        res['x_response_code'] = response.find('transactionResponse/responseCode').text
-        res['x_trans_id'] = response.find('transactionResponse/transId').text
-        res['x_type'] = 'auth_capture'
-        return res
-
-    def authorize(self, token, amount, reference):
-        """Authorize a payment for the given amount.
-        Authorize (without capture) a payment for the given payment.token
-        record for the specified amount with reference as communication.
-        :param record token: the payment.token record that must be charged
-        :param str amount: transaction amount (up to 15 digits with decimal point)
-        :param str reference: used as "invoiceNumber" in the Authorize.net backend
-        :return: a dict containing the response code, transaction id and transaction type
-        :rtype: dict
-        """
-        root = self._base_tree('createTransactionRequest')
-        tx = etree.SubElement(root, "transactionRequest")
-        etree.SubElement(tx, "transactionType").text = "authOnlyTransaction"
-        etree.SubElement(tx, "amount").text = str(amount)
-        profile = etree.SubElement(tx, "profile")
-        etree.SubElement(profile, "customerProfileId").text = token.authorize_profile
-        payment_profile = etree.SubElement(profile, "paymentProfile")
-        etree.SubElement(payment_profile, "paymentProfileId").text = token.acquirer_ref
-        order = etree.SubElement(tx, "order")
-        etree.SubElement(order, "invoiceNumber").text = reference[:20]
-        response = self._authorize_request(root)
-        res = dict()
-        (has_error, error_msg) = error_check(response)
-        if has_error:
-            res['x_response_code'] = self.AUTH_ERROR_STATUS
-            res['x_response_reason_text'] = error_msg
-            return res
-        res['x_response_code'] = response.find('transactionResponse/responseCode').text
-        res['x_trans_id'] = response.find('transactionResponse/transId').text
-        res['x_type'] = 'auth_only'
-        return res
-
-    def capture(self, transaction_id, amount):
-        """Capture a previously authorized payment for the given amount.
-        Capture a previsouly authorized payment. Note that the amount is required
-        even though we do not support partial capture.
-        :param str transaction_id: id of the authorized transaction in the
-                                   Authorize.net backend
-        :param str amount: transaction amount (up to 15 digits with decimal point)
-        :return: a dict containing the response code, transaction id and transaction type
-        :rtype: dict
-        """
-        root = self._base_tree('createTransactionRequest')
-        tx = etree.SubElement(root, "transactionRequest")
-        etree.SubElement(tx, "transactionType").text = "priorAuthCaptureTransaction"
-        etree.SubElement(tx, "amount").text = str(amount)
-        etree.SubElement(tx, "refTransId").text = transaction_id
-        response = self._authorize_request(root)
-        res = dict()
-        (has_error, error_msg) = error_check(response)
-        if has_error:
-            res['x_response_code'] = self.AUTH_ERROR_STATUS
-            res['x_response_reason_text'] = error_msg
-            return res
-        res['x_response_code'] = response.find('transactionResponse/responseCode').text
-        res['x_trans_id'] = response.find('transactionResponse/transId').text
-        res['x_type'] = 'prior_auth_capture'
-        return res
-
-    def void(self, transaction_id):
-        """Void a previously authorized payment.
-        :param str transaction_id: the id of the authorized transaction in the
-                                   Authorize.net backend
-        :return: a dict containing the response code, transaction id and transaction type
-        :rtype: dict
-        """
-        root = self._base_tree('createTransactionRequest')
-        tx = etree.SubElement(root, "transactionRequest")
-        etree.SubElement(tx, "transactionType").text = "voidTransaction"
-        etree.SubElement(tx, "refTransId").text = transaction_id
-        response = self._authorize_request(root)
-        res = dict()
-        (has_error, error_msg) = error_check(response)
-        if has_error:
-            res['x_response_code'] = self.AUTH_ERROR_STATUS
-            res['x_response_reason_text'] = error_msg
-            return res
-        res['x_response_code'] = response.find('transactionResponse/responseCode').text
-        res['x_trans_id'] = response.find('transactionResponse/transId').text
-        res['x_type'] = 'void'
-        return res
-
-    # Test
-    def test_authenticate(self):
-        """Test Authorize.net communication with a simple credentials check.
-        :return: True if authentication was successful, else False (or throws an error)
-        :rtype: bool
-        """
-        test_auth = self._base_tree('authenticateTestRequest')
-        response = self._authorize_request(test_auth)
-        root = objectify.fromstring(response)
-        if root.find('{ns}messages/{ns}resultCode'.format(ns='{%s}' % XMLNS)) == 'Ok':
-            return True
-        return False
-
-    def create_customer_profile_from_tx(self, partner, transaction_id):
-        """Create an Auth.net payment/customer profile from an existing transaction.
-        Creates a customer profile for the partner/credit card combination and links
-        a corresponding payment profile to it. Note that a single partner in the Odoo
-        database can have multiple customer profiles in Authorize.net (i.e. a customer
-        profile is created for every res.partner/payment.token couple).
-        Note that this function makes 2 calls to the authorize api, since we need to
-        obtain a partial cardnumber to generate a meaningful payment.token name.
-        :param record partner: the res.partner record of the customer
-        :param str transaction_id: id of the authorized transaction in the
-                                   Authorize.net backend
-        :return: a dict containing the profile_id and payment_profile_id of the
-                 newly created customer profile and payment profile as well as the
-                 last digits of the card number
-        :rtype: dict
-        """
-        root = self._base_tree('createCustomerProfileFromTransactionRequest')
-        etree.SubElement(root, "transId").text = transaction_id
-        customer = etree.SubElement(root, "customer")
-        # merchantCustomerId is ODOO-{partner.id}-{random hex string} truncated to maximum 20 characters
-        etree.SubElement(customer, "merchantCustomerId").text = ('ODOO-%s-%s' % (partner.id, uuid4().hex[:8]))[:20]
-        etree.SubElement(customer, "email").text = partner.email or ''
-        response = self._authorize_request(root)
-        res = dict()
-        if response.find(
-                'customerProfileId') is None:  # Warning: do not use bool(etree) as the semantics is very misleading
-            _logger.warning(
-                'Unable to create customer payment profile, data missing from transaction. Transaction_id: %s - Partner_id: %s'
-                % (transaction_id, partner)
-            )
-            return res
-        res['profile_id'] = response.find('customerProfileId').text
-        res['payment_profile_id'] = response.find('customerPaymentProfileIdList/numericString').text
-        root_profile = self._base_tree('getCustomerPaymentProfileRequest')
-        etree.SubElement(root_profile, "customerProfileId").text = res['profile_id']
-        etree.SubElement(root_profile, "customerPaymentProfileId").text = res['payment_profile_id']
-        response_profile = self._authorize_request(root_profile)
-        res['name'] = response_profile.find('paymentProfile/payment/creditCard/cardNumber').text
-        return res
 
     def credit(self, token, amount, transaction_id):
         """ Refund a payment for the given amount.
 
         :param record token: the payment.token record that must be refunded.
         :param str amount: transaction amount
-        :param str transaction_id: the reference of the transaction that is going to be refunded.
+        :param str transaction_id: the reference of the transacation that is going to be refunded.
 
         :return: a dict containing the response code, transaction id and transaction type
         :rtype: dict
@@ -249,7 +41,7 @@ class AuthorizeAPI(AuthorizeAPI):
         res['x_type'] = 'refund'
 
         return res
-
+ 
     def create_customer_profile(self, partner, cardnumber, expiration_date, card_code, full_name):
         """Create a payment and customer profile in the Authorize.net backend.
 
@@ -268,17 +60,16 @@ class AuthorizeAPI(AuthorizeAPI):
         :rtype: dict
         """
         if not partner._get_payment_token():
-            root = self._base_tree('createCustomerProfileRequest')
+            root = self._base_tree('createCustomerProfileRequest')                    
             profile = etree.SubElement(root, "profile")
             if partner.x_custno:
                 etree.SubElement(profile, "merchantCustomerId").text = ('%s' % (partner.x_custno))
             else:
-                etree.SubElement(profile, "merchantCustomerId").text = ('ODOO-%s-%s' % (partner.id, uuid4().hex[:8]))[
-                                                                       :20]
+                etree.SubElement(profile, "merchantCustomerId").text = ('ODOO-%s-%s' % (partner.id, uuid4().hex[:8]))[:20]
             etree.SubElement(profile, "description").text = partner.name
             etree.SubElement(profile, "email").text = partner.email or ''
             payment_profile = etree.SubElement(profile, "paymentProfiles")
-        else:
+        else:        
             root = self._base_tree('createCustomerPaymentProfileRequest')
             etree.SubElement(root, "customerProfileId").text = partner._get_payment_token()
             payment_profile = etree.SubElement(root, "paymentProfile")
@@ -286,13 +77,12 @@ class AuthorizeAPI(AuthorizeAPI):
         billTo = etree.SubElement(payment_profile, "billTo")
         etree.SubElement(billTo, "firstName").text = full_name[0]
         etree.SubElement(billTo, "lastName").text = full_name[1]
-        etree.SubElement(billTo, "address").text = (partner.street or '' + (
-            partner.street2 if partner.street2 else '')) or None
-
+        etree.SubElement(billTo, "address").text = (partner.street or '' + (partner.street2 if partner.street2 else '')) or None
+        
         missing_fields = [partner._fields[field].string for field in ['city', 'country_id'] if not partner[field]]
         if missing_fields:
             raise ValidationError({'missing_fields': missing_fields})
-
+        
         etree.SubElement(billTo, "city").text = partner.city
         etree.SubElement(billTo, "state").text = partner.state_id.name or None
         etree.SubElement(billTo, "zip").text = partner.zip or ''
