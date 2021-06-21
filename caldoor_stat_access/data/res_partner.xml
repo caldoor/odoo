@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="caldoor_account.view_partner_form">
+            <field name="groups_id" eval="[(4, ref('caldoor_stat_access.inside_sales_caldoor'))]"/>
+        </record>
+        <record model="ir.ui.view" id="	account_reports.res_partner_view_form">
+            <field name="groups_id" eval="[(4, ref('caldoor_stat_access.inside_sales_caldoor'))]"/>
+        </record>
+    </data>
+</odoo>
