@@ -17,12 +17,11 @@
 
     'category': 'Custom',
 
-    'depends': ['sales_team','caldoor_account','account_reports'],
+    'depends': ['sales_team', 'caldoor_account', 'account_reports'],
 
     'data': [
         'security/res_partner.xml',
         'data/res_partner.xml'
-        
     ],
 
     'demo': [
