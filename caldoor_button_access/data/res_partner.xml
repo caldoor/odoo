@@ -5,8 +5,8 @@
         <record model="ir.ui.view" id="caldoor_account.view_partner_form">
             <field name="groups_id" eval="[(4, ref('caldoor_button_access.inside_sales_caldoor'))]"/>
         </record>
-        <record model="ir.ui.view" id="caldoor_account_reports.res_partner_view_form_inherit_caldoor">
+<!--         <record model="ir.ui.view" id="caldoor_account_reports.res_partner_view_form_inherit_caldoor">
             <field name="groups_id" eval="[(4, ref('caldoor_button_access.inside_sales_caldoor'))]"/>
-        </record>
+        </record> -->
     </data>
 </odoo>
