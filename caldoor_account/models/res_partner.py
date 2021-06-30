@@ -20,4 +20,4 @@ class ResPartner(models.Model):
     @api.depends('invoice_ids', 'invoice_ids.amount_total', 'invoice_ids.state', 'invoice_ids.type')
     def _compute_open_invoice_amount(self):
         for partner in self:
-            self.invoice_open_amount = sum(partner.invoice_ids.filtered(lambda i: i.state == 'open' and i.type in ('out_invoice', 'out_refund')).mapped('amount_total'))
+            self.invoice_open_amount = sum(partner.invoice_ids.filtered(lambda i: i.state not in ('done', 'draft', 'cancel') and i.type in ('out_invoice', 'out_refund')).mapped('residual_signed'))
