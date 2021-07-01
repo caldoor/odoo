@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<odoo>
+    <data>
+        <record model="res.groups" id="inside_sales_caldoor">
+            <field name="name">InsideSales</field>
+            <field name="implied_ids" eval="[(4, ref('sales_team.group_sale_salesman_all_leads'))]"></field>
+            <field name="category_id" ref="base.module_category_sales_management"/>
+        </record>
+    </data>
+</odoo>
