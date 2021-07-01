@@ -13,7 +13,6 @@ class PaymentToken(models.Model):
 
     @api.depends('payment_ids')
     def _compute_last_successful_transaction_date(self):
-        timezone = tz.gettz('America/Los_Angeles')
         for token in self:
             last_date = None
             for payment in token.payment_ids:
