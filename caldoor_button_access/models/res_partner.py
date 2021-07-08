@@ -5,6 +5,9 @@ from odoo import fields, models, api
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
+    # field overridden to give access to inside sales
+    total_invoiced = fields.Monetary(compute='_invoice_total', string="Total Invoiced",
+                                     groups="account.group_account_invoice, caldoor_button_access.inside_sales_caldoor")
 
     def open_action_followup(self):
         if self.env.user.has_group('caldoor_button_access.inside_sales_caldoor'):
